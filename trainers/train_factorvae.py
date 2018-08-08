@@ -5,8 +5,7 @@ from torch.nn import functional as F
 from torchvision.utils import save_image
 
 from utils.misc import overrides
-from .utils import BaseTrainer, kl_gauss_unag, \
-  sse_loss, bce_loss, kl_cat_unag
+from .utils import *
 
 
 def permute_dims(z):
@@ -91,9 +90,7 @@ class Trainer(BaseTrainer):
           self.logger.print(step)
         
         if not step % self.args.save_interval:
-          filepath = os.path.join(self.args.logdir, 'model.ckpt')
-          torch.save(self.nets['vae'], filepath)
-      
+          save_ckpt(self.nets['vae'], self.args.logdir)
           self.logger.save(step)
           self.vis.traverse(step)
           self.vis.recon(step)

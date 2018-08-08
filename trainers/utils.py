@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -25,6 +26,16 @@ def bce_loss(source, target):
 
 def sse_loss(source, target):
   return 0.5*(source - target).pow(2).mean(0).sum()
+
+
+def save_ckpt(model, logdir):
+  savepath = os.path.join(logdir, 'model.ckpt')
+  torch.save({
+    'in_dim': model.in_dim,
+    'cont_dim': 0 if not len(model.cont_dim) else model.cont_dim[0],
+    'cat_dims': model.cat_dims,
+    'state_dict': model.state_dict()
+  }, savepath) 
 
 
 class BaseTrainer(ABC):
