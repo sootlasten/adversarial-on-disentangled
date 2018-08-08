@@ -1,0 +1,6 @@
+data/
+mnist/
+results/
+__pycache__/
+*.swp
+
