@@ -34,6 +34,7 @@ def save_ckpt(model, logdir):
     'in_dim': model.in_dim,
     'cont_dim': 0 if not len(model.cont_dim) else model.cont_dim[0],
     'cat_dims': model.cat_dims,
+    'temp': model.temp,
     'state_dict': model.state_dict()
   }, savepath) 
 

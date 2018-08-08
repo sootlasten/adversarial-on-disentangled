@@ -33,7 +33,7 @@ def _decoder(img_dims, nb_latents, nonl, out_nonl):
 
 
 class VAE(nn.Module):
-  def __init__(self, img_dims, cont_dim, cat_dims, temp=0.1):
+  def __init__(self, img_dims, cont_dim, cat_dims, temp):
     super(VAE, self).__init__()
     self.in_dim = img_dims
 
@@ -58,6 +58,18 @@ class VAE(nn.Module):
     if self.cont_dim: i += 2; params['cont'] = out[:i]
     if self.cat_dims: params['cat'] = out[i:]
     return params
+  
+  @staticmethod
+  def flatten_dists_params(params_dict):
+    params_flat = []
+    if 'cont' in params_dict.keys():
+      src_mu = params_dict['cont'][0].squeeze()
+      params_flat.append(src_mu)
+    if 'cat' in params_dict.keys():
+      for logits in params_dict['cat']:
+        params_flat.append(logits.squeeze())
+    params_flat = torch.cat(params_flat)
+    return params_flat
     
   def _reparam_gauss(self, mu, logvar):
     if self.training:

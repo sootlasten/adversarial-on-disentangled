@@ -131,6 +131,7 @@ class MNISTUtil(DataUtil):
   @property
   @overrides(DataUtil)
   def testdata(self):
-    test_data = MNIST(MNIST_PATH, train=False, download=True, transform=self.transforms)
+    test_data = MNIST(MNIST_PATH, train=False, \
+      download=True, transform=self.transforms)
     return test_data
 
