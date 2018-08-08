@@ -16,8 +16,20 @@ def run(img_dims, cont_dim, cat_dims, args):
   return nets, optimizers
 
 
+def get_args(parser):
+  parser.add_argument('--cap-coeff', type=float, default=30,
+                      help='capacity constraint coefficient')
+  parser.add_argument('--cap-min', type=float, default=0,
+                      help='min capacity for KL')
+  parser.add_argument('--cap-max', type=float, default=5,
+                      help='max capacity for KL')
+  parser.add_argument('--cap-iters', type=int, default=100000,
+                      help='number of iters to increase the capacity over')
+  return parser.parse_args()
+
+
 if __name__ == '__main__':
   parser = get_common_parser()
-  args = parser.parse_args()
+  args = get_args(parser)
   run(args, Trainer)
 

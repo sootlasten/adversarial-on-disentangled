@@ -52,14 +52,6 @@ def get_common_parser():
   parser = argparse.ArgumentParser()
   parser.add_argument('--eta', type=float, default=1e-4,
                       help='learning rate for VAE')
-  parser.add_argument('--cap-coeff', type=float, default=1000,
-                      help='capacity constraint coefficient')
-  parser.add_argument('--cap-min', type=float, default=0,
-                      help='min capacity for KL')
-  parser.add_argument('--cap-max', type=float, default=25,
-                      help='max capacity for KL')
-  parser.add_argument('--cap-iters', type=int, default=25000,
-                      help='number of iters to increase the capacity over')
   parser.add_argument('--temp', type=float, default=0.1,
                       help='temperature for gumbel-softmax')
   parser.add_argument('--cont-dim', type=int, default=10,
