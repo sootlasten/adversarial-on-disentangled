@@ -14,7 +14,7 @@ from utils.misc import overrides
 from .data_util import DataUtil
 
 
-MNIST_PATH = '/home/stensootla/projects/datasets/mnist'
+MNIST_PATH = '/home/stensootla/projects/datasets/mnist2'
 
 class MNIST(data.Dataset):
   urls = [

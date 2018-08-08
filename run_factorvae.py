@@ -12,7 +12,8 @@ def run(img_dims, cont_dim, cat_dims, args):
     'tc_disc': tc_disc(cont_dim + sum(cat_dims))
   }
   optimizers = {
-    'vae': optim.Adam(nets['vae'].parameters(), lr=args.eta),
+    'vae': optim.Adam(nets['vae'].parameters(), lr=args.eta, 
+      weight_decay=args.weight_decay),
     'tc_disc': optim.Adam(nets['tc_disc'].parameters(), lr=args.eta)
   }
   return nets, optimizers

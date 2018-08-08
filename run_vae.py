@@ -11,7 +11,8 @@ def run(img_dims, cont_dim, cat_dims, args):
     'vae': VAE(img_dims, cont_dim, cat_dims, args.temp)
   }
   optimizers = {
-    'vae': optim.Adam(nets['vae'].parameters(), lr=args.eta)
+    'vae': optim.Adam(nets['vae'].parameters(), lr=args.eta, 
+      weight_decay=args.weight_decay)
   }
   return nets, optimizers
 

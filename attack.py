@@ -9,13 +9,13 @@ from models import VAE
 from attack_utils.mnist_single_digit import get_mnist_loader
 
 
-def latent_attack(model, src, tar, device, vis=False):
+def latent_attack(model, src, tar, vis, device):
   src = src.to(device)
   src_recon, _, src_z_params = model(src)
   src_z_params = VAE.flatten_dists_params(src_z_params).detach()
       
   tar = tar.to(device)
-  noise = Normal(loc=tar, scale=0.5)
+  noise = Normal(loc=tar, scale=0.2)
   adv = torch.clamp(tar + noise.sample(), 0, 1).requires_grad_()
   optimizer = optim.Adam([adv], lr=1e-3)
   
@@ -54,25 +54,33 @@ def latent_attack(model, src, tar, device, vis=False):
     plt.show()
 
 
-def full_sweep(args, model, device):
+def full_sweep(model, args, device):
   digits = list(range(10))
-  for src_digit in digits:
+  for src_digit in [5,3,6]:
     for tar_digit in digits:
       if src_digit == tar_digit: continue
     
       src_loader = get_mnist_loader(src_digit)
       tar_loader = get_mnist_loader(tar_digit)
-      for src, tar in zip(src_loader, tar_loader):
-        latent_attack(model, src, tar, device, args.vis) 
+      for i, (src, tar) in enumerate(zip(src_loader, tar_loader)):
+        if i >= args.attacks_per_pair: break
+        latent_attack(model, src, tar, args.vis, device) 
 
 
 def parse():
   parser = argparse.ArgumentParser()
   parser.add_argument('--ckpt', type=str, required=True, dest='ckpt_path',
                       help='path to the saved VAE model checkpoint')
+  parser.add_argument('--eta', type=float, default=1e-3)
+  parser.add_argument('--lambda', type=float, default=0.5, dest='_lambda')
+  parser.add_argument('--noise-std', type=float, default=0.2)
+  parser.add_argument('--steps', type=int, default=1000,
+                      help='number of steps the Adam optimizer takes when \
+                            generating an adversarial example')
+  parser.add_argument('--attacks-per-pair', type=int, default=10) 
   parser.add_argument('--no-cuda', action='store_true', default=False)
   parser.add_argument('--seed', type=int, default=1)
-  parser.add_argument('--vis', action='store_true', default=True)
+  parser.add_argument('--vis', action='store_true', default=False)
   return parser.parse_args()
 
 
@@ -88,7 +96,7 @@ def run(args):
     ckpt['cat_dims'], ckpt['temp']).to(device)
   model.load_state_dict(ckpt['state_dict'])
     
-  full_sweep(args, model, device)
+  full_sweep(model, args, device)
 
 
 if __name__ == '__main__':

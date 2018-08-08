@@ -52,6 +52,7 @@ def get_common_parser():
   parser = argparse.ArgumentParser()
   parser.add_argument('--eta', type=float, default=1e-4,
                       help='learning rate for VAE')
+  parser.add_argument('--weight-decay', type=float, default=0)
   parser.add_argument('--temp', type=float, default=0.1,
                       help='temperature for gumbel-softmax')
   parser.add_argument('--cont-dim', type=int, default=10,
