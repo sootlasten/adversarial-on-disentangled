@@ -33,7 +33,7 @@ def _decoder(img_dims, nb_latents, nonl, out_nonl):
 
 
 class VAE(nn.Module):
-  def __init__(self, img_dims, cont_dim, cat_dims, temp):
+  def __init__(self, img_dims, cont_dim, cat_dims, temp=0.1):
     super(VAE, self).__init__()
     self.in_dim = img_dims
 
