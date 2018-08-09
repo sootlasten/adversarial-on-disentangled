@@ -2,4 +2,5 @@ mnist/
 results/
 __pycache__/
 *.swp
+*.ckpt
 
