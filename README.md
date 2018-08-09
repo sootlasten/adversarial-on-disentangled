@@ -10,4 +10,6 @@ In all of the following images, the first row depicts randomly chosen datapoints
 
 #### MNIST
 
+Rows 3-12 depict latent traversals of continuous Gaussian variables, while the last row illustrates the traversal of a 10-dimensional categorical variable.
+
 ![MNIST 8 traversal](imgs/disentangled_mnist_8_traversal.png)
