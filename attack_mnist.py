@@ -8,9 +8,8 @@ import torch
 import torch.optim as optim
 from torch.distributions import Normal
 
-from models import VAE
-from attack_utils.train_cls import MnistClassifier
-from attack_utils.mnist_single_loader import get_mnist_loader
+from models import VAE, MnistClassifier
+from loaders.mnist_single_loader import get_mnist_loader
 
 
 def l2_norm(x):
@@ -56,6 +55,7 @@ class Attacker():
           idx = src_recon_class == src_class
 
           adv = self._latent_attack(src, tar)[idx]
+          assert len(idx.nonzero())  # everything classified incorrectly, weird!
           adv_recon = self.vae(adv)[0]
           adv_recon_class =  cls(adv_recon).argmax(dim=1)
           

@@ -6,26 +6,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-MNIST_PATH = '/home/stensootla/projects/datasets/mnist'
-
-
-class MnistClassifier(nn.Module):
-  def __init__(self):
-    super(MnistClassifier, self).__init__()
-    self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-    self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-    self.conv2_drop = nn.Dropout2d()
-    self.fc1 = nn.Linear(500, 50)
-    self.fc2 = nn.Linear(50, 10)
-
-  def forward(self, x):
-    x = F.relu(F.max_pool2d(self.conv1(x), 2))
-    x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-    x = x.view(-1, 500)
-    x = F.relu(self.fc1(x))
-    x = F.dropout(x, training=self.training)
-    x = self.fc2(x)
-    return F.log_softmax(x, dim=1)
+import os; import sys; sys.path.insert(1, os.path.join(sys.path[0], '..'))
+from models import MnistClassifier
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
@@ -75,9 +57,11 @@ def parse():
                       help='SGD momentum (default: 0.5)')
   parser.add_argument('--no-cuda', action='store_true', default=False,
                       help='disables CUDA training')
-  parser.add_argument('--ckpt-save-path', type=str, default='cls.ckpt')
+  parser.add_argument('--ckpt-save-path', type=str, default='mnistcls.ckpt')
   parser.add_argument('--seed', type=int, default=1, metavar='S',
                       help='random seed (default: 1)')
+  parser.add_argument('--mnist-path', type=str, 
+    default='/home/stensootla/projects/datasets/mnist')
   parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                       help='how many batches to wait before logging \
                             training status')
@@ -86,7 +70,6 @@ def parse():
 
 def main():
   args = parse()
-
   torch.manual_seed(args.seed)
 
   use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -97,12 +80,12 @@ def main():
     transforms.ToTensor()
   ])
 
-  train_dataset = datasets.MNIST(MNIST_PATH, train=True, 
+  train_dataset = datasets.MNIST(args.mnist_path, train=True, 
     download=True, transform=all_transforms)
   train_loader = DataLoader(train_dataset, 
     batch_size=args.batch_size, shuffle=True)
   
-  test_dataset = datasets.MNIST(MNIST_PATH, train=False,
+  test_dataset = datasets.MNIST(args.mnist_path, train=False,
     transform=all_transforms)
   test_loader = DataLoader(test_dataset, batch_size=args.test_batch_size)
 
