@@ -126,13 +126,13 @@ class MnistSingleDigit(Dataset):
     print('Done!')
 
 
-def get_mnist_loader(digit, train=False):
+def get_mnist_loader(digit, batch_size, train=False):
   all_transforms = transforms.Compose([
       transforms.Resize(32),
       transforms.ToTensor()
   ])
   dataset = MnistSingleDigit(MNIST_PATH, digit=digit, train=train, 
     download=True, transform=all_transforms)
-  mnist_loader = DataLoader(dataset, batch_size=1, shuffle=True)
+  mnist_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
   return mnist_loader
 

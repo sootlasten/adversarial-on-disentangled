@@ -63,12 +63,12 @@ class VAE(nn.Module):
   def flatten_dists_params(params_dict):
     params_flat = []
     if 'cont' in params_dict.keys():
-      src_mu = params_dict['cont'][0].squeeze()
+      src_mu = params_dict['cont'][0]
       params_flat.append(src_mu)
     if 'cat' in params_dict.keys():
       for logits in params_dict['cat']:
-        params_flat.append(logits.squeeze())
-    params_flat = torch.cat(params_flat)
+        params_flat.append(logits)
+    params_flat = torch.cat(params_flat, dim=1)
     return params_flat
     
   def _reparam_gauss(self, mu, logvar):
