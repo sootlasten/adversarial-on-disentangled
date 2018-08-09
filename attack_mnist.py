@@ -9,7 +9,7 @@ import torch.optim as optim
 from torch.distributions import Normal
 
 from models import VAE, MnistClassifier
-from loaders.mnist_single_loader import get_mnist_loader
+from loaders.mnist_single_class import get_mnist_loader
 
 
 def l2_norm(x):
