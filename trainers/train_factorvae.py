@@ -92,6 +92,12 @@ class Trainer(BaseTrainer):
         if not step % self.args.save_interval:
           save_ckpt(self.nets['vae'], self.args.logdir)
           self.logger.save(step)
-          self.vis.traverse(step)
-          self.vis.recon(step)
+
+          filename = 'traversal_' + str(step) + '.png'
+          save_path = os.path.join(self.args.logdir, filename)
+          self.vis.traverse(save_path)
+
+          filename = 'recon_' + str(step) + '.png'
+          save_path = os.path.join(self.args.logdir, filename)
+          self.vis.recon(save_path)
 

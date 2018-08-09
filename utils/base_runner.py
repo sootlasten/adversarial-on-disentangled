@@ -101,8 +101,7 @@ def base_runner(setup_models):
     os.makedirs(args.logdir)
   
     # visualizer and logger
-    vis = Visualizer(nets['vae'], device,   
-      args.logdir, datautil.testdata, args.nb_trav)
+    vis = Visualizer(nets['vae'], device, datautil.testdata, args.nb_trav)
     logger = Logger(args.logdir, args.steps)
     logger.save_args(args)
     

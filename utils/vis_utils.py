@@ -17,10 +17,9 @@ def temp_eval(func):
 
 
 class Visualizer():
-  def __init__(self, model, device, logdir, dataset, nb_trav):
+  def __init__(self, model, device, dataset, nb_trav):
     self.model = model
     self.device = device
-    self.logdir = logdir
     self.dataset = dataset
     self.trav_imgs = self._get_trav_imgs(nb_trav)
 
@@ -34,7 +33,7 @@ class Visualizer():
     return torch.stack(imgs).to(self.device)
 
   @temp_eval
-  def recon(self, step):
+  def recon(self, save_path):
     imgs = []
     for i in range(50):
       img = self.dataset[i]
@@ -42,14 +41,11 @@ class Visualizer():
     imgs = torch.stack(imgs).to(self.device)
     recons, _, _ = self.model(imgs)
     canvas = torch.cat((imgs, recons), dim=0)
-    
-    filename = 'recon_' + str(step) + '.png'
-    save_path = os.path.join(self.logdir, filename)
     save_image(canvas, save_path, nrow=10, pad_value=1)
 
 
   @temp_eval
-  def traverse(self, step):
+  def traverse(self, save_path):
     recons, z, dist_params = self.model(self.trav_imgs)
     canvas = torch.cat((self.trav_imgs, recons), dim=0)
     nb_cols = len(self.trav_imgs)
@@ -82,7 +78,5 @@ class Visualizer():
         row[:d] = recon
         canvas = torch.cat((canvas, row), dim=0)
     
-    filename = 'traversal_' + str(step) + '.png'
-    save_path = os.path.join(self.logdir, filename)
     save_image(canvas, save_path, nrow=nb_cols, pad_value=1)
 

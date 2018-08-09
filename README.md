@@ -7,3 +7,7 @@ In all of the following images, the first row depicts randomly chosen datapoints
 #### Gaussian blobs
 
 ![Gaussian blobs FactorVAE traversal](imgs/blobs-factorvae-traversal.png)
+
+#### MNIST
+
+![MNIST 8 traversal](imgs/disentangled_mnist_8_traversal.png)
