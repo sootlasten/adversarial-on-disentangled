@@ -103,6 +103,10 @@ class Attacker():
     noise = Normal(loc=src, scale=self.args.noise_std)
     adv = torch.clamp(src + noise.sample(), 0, 1).requires_grad_()
     optimizer = optim.Adam([adv], lr=self.args.eta)
+  
+    # per-pixel lower and upper bounds
+    _min = torch.max(torch.zeros_like(src.data), src.data-self.args.eps)
+    _max = torch.min(torch.ones_like(src.data), src.data+self.args.eps)
     
     for i in range(self.args.steps):
       adv_recon, _, adv_z_params = self.vae(adv)
@@ -115,7 +119,8 @@ class Attacker():
       loss.backward()
       optimizer.step()
 
-      adv.data = torch.clamp(adv.data, 0, 1)
+      adv.data = torch.min(torch.max(adv.data, _min), _max)
+      #adv.data = torch.clamp(adv.data, 0, 1)
         
     return adv
     
@@ -126,7 +131,12 @@ def parse():
   parser.add_argument('--cls-ckpt', type=str, default=None, dest='cls_ckpt_path')
   parser.add_argument('--eta', type=float, default=1e-3)
   parser.add_argument('--batch-size', type=int, default=64)
-  parser.add_argument('--lambda', type=float, default=20, dest='_lambda')
+  parser.add_argument('--lambda', type=float, default=20, dest='_lambda',
+                      help='coefficient for the pixel-wise norm')
+  parser.add_argument('--eps', type=float, default=0.1,
+                      help='the maximum amount any pixel in the adversarial \
+                            image can deviate from a corresponding pixel in the \
+                            source image')
   parser.add_argument('--noise-std', type=float, default=0.2)
   parser.add_argument('--steps', type=int, default=1000,
                       help='number of steps the Adam optimizer takes when \
