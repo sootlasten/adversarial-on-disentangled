@@ -1,0 +1,74 @@
+\documentclass{report}
+\usepackage{setspace}
+%\usepackage{subfigure}
+
+\pagestyle{plain}
+\usepackage{amssymb,graphicx,color}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+\usepackage{a4wide}
+\usepackage{amsmath}
+
+\newtheorem{theorem}{THEOREM}
+\newtheorem{lemma}[theorem]{LEMMA}
+\newtheorem{corollary}[theorem]{COROLLARY}
+\newtheorem{proposition}[theorem]{PROPOSITION}
+\newtheorem{remark}[theorem]{REMARK}
+\newtheorem{definition}[theorem]{DEFINITION}
+\newtheorem{fact}[theorem]{FACT}
+
+\newtheorem{problem}[theorem]{PROBLEM}
+\newtheorem{exercise}[theorem]{EXERCISE}
+\def \set#1{\{#1\} }
+
+\newenvironment{proof}{
+PROOF:
+\begin{quotation}}{
+$\Box$ \end{quotation}}
+
+
+
+\newcommand{\nats}{\mbox{\( \mathbb N \)}}
+\newcommand{\rat}{\mbox{\(\mathbb Q\)}}
+\newcommand{\rats}{\mbox{\(\mathbb Q\)}}
+\newcommand{\reals}{\mbox{\(\mathbb R\)}}
+\newcommand{\ints}{\mbox{\(\mathbb Z\)}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{  	{ \includegraphics[scale=.5]{ucl_logo.png}}\\
+{{\Huge Investigating the Robustness of Disentangled Variational Autoencoders to Adversarial Examples}}\\}
+\date{Submission date: 10.08.2018}
+\author{Sten Sootla\thanks{
+{\bf Disclaimer:}
+This report is submitted as part requirement for the MSc degree in Computational Statistics and Machine Learning at UCL. It is substantially the result of my own work except where explicitly indicated in the text. The report may be freely copied and distributed provided the source is explicitly acknowledged.}
+\\ \\
+Computational Statistics and Machine Learning\\ \\
+Supervised by Dr. Cristina Calnegru and Dr. John Shawe-Taylor
+}
+
+
+
+\begin{document}
+ 
+ \onehalfspacing
+\maketitle
+\begin{abstract}
+Summarise your report concisely.
+\end{abstract}
+\tableofcontents
+\setcounter{page}{1}
+
+
+\chapter{Introduction}
+
+\chapter{Related work and background}
+
+\chapter{Methods}
+
+\chapter{Results}
+
+\chapter{Conclusion}
+
+\end{document}
