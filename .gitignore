@@ -7,5 +7,5 @@ text/*.toc
 text/*.gz
 text/*.aux
 text/*.log
-
+text/*.dvi
 

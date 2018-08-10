@@ -8,6 +8,8 @@
 \usepackage{latexsym}
 \usepackage{a4wide}
 \usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{makecell}
 
 \newtheorem{theorem}{THEOREM}
 \newtheorem{lemma}[theorem]{LEMMA}
@@ -37,7 +39,7 @@ $\Box$ \end{quotation}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\title{  	{ \includegraphics[scale=.5]{ucl_logo.png}}\\
+\title{  	{ \includegraphics[scale=.5,natwidth=294,natheight=84]{ucl_logo.png}}\\
 {{\Huge Investigating the Robustness of Disentangled Variational Autoencoders to Adversarial Examples}}\\}
 \date{Submission date: 10.08.2018}
 \author{Sten Sootla\thanks{
@@ -49,10 +51,9 @@ Supervised by Dr. Cristina Calnegru and Dr. John Shawe-Taylor
 }
 
 
-
 \begin{document}
  
- \onehalfspacing
+\onehalfspacing
 \maketitle
 \begin{abstract}
 Summarise your report concisely.
@@ -68,6 +69,37 @@ Summarise your report concisely.
 \chapter{Methods}
 
 \chapter{Results}
+
+
+\begin{center}
+{\tiny
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \cline{1-11}
+  \multirow{2}{*}{\textbf{Source}}
+  & \multicolumn{10}{ c| }{\textbf{Targets}}  \\ \cline {2-11}
+  & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
+  \textbf{0} & - & \makecell{67.64\% \\ (0.00\%)} & \makecell{9.49\% \\ (5.11\%)} & \makecell{13.72\% \\ (2.83\%)} & \makecell{58.05\% \\ (16.63\%)} & \makecell{25.72\% \\ (15.15\%)} & \makecell{7.99\% \\ (5.86\%)} & \makecell{69.52\% \\ (35.18\%)} & \makecell{36.76\% \\ (30.46\%)} & \makecell{72.04\% \\ (30.37\%)} \\ \hline
+
+  \textbf{1} & \makecell{99.90\% \\ (0.21\%)} & - & \makecell{97.03\% \\ (90.88\%)} & \makecell{97.66\% \\ (67.62\%)} & \makecell{85.49\% \\ (55.85\%)} & \makecell{99.08\% \\ (51.78\%)} & \makecell{98.29\% \\ (45.40\%)} & \makecell{15.07\% \\ (4.79\%)} & \makecell{95.90\% \\ (80.02\%)} & \makecell{81.89\% \\ (56.66\%)} \\ \hline
+
+  \textbf{2} & \makecell{10.77\% \\ (1.23\%)} & \makecell{79.13\% \\ (8.73\%)} & - & \makecell{45.42\% \\ (19.31\%)} & \makecell{78.37\% \\ (31.44\%)} & \makecell{60.80\% \\ (12.62\%)} & \makecell{11.66\% \\ (4.46\%)} & \makecell{82.38\% \\ (53.60\%)} & \makecell{66.74\% \\ (60.43\%)} & \makecell{91.13\% \\ (19.82\%)} \\ \hline
+
+  \textbf{3} & \makecell{3.00\% \\ (0.12\%)} & \makecell{94.93\% \\ (7.55\%)} & \makecell{36.78\% \\ (31.16\%)} & - & \makecell{58.22\% \\ (11.69\%)} & \makecell{18.26\% \\ (12.59\%)} & \makecell{24.08\% \\ (4.74\%)} & \makecell{94.10\% \\ (50.57\%)} & \makecell{54.60\% \\ (48.11\%)} & \makecell{72.73\% \\ (50.62\%)} \\ \hline
+
+  \textbf{4} & \makecell{84.03\% \\ (10.81\%)} & \makecell{54.18\% \\ (1.11\%)} & \makecell{92.83\% \\ (83.60\%)} & \makecell{84.60\% \\ (33.62\%)} & - & \makecell{63.94\% \\ (32.50\%)} & \makecell{49.81\% \\ (21.03\%)} & \makecell{69.44\% \\ (30.43\%)} & \makecell{43.76\% \\ (28.43\%)} & \makecell{41.40\% \\ (36.44\%)} \\ \hline
+
+  \textbf{5} & \makecell{49.01\% \\ (11.04\%)} & \makecell{96.31\% \\ (4.35\%)} & \makecell{78.55\% \\ (25.79\%)} & \makecell{41.32\% \\ (32.72\%)} & \makecell{51.80\% \\ (15.31\%)} & - & \makecell{51.31\% \\ (18.11\%)} & \makecell{93.40\% \\ (45.12\%)} & \makecell{63.11\% \\ (53.49\%)} & \makecell{67.45\% \\ (44.75\%)} \\ \hline
+
+  \textbf{6} & \makecell{21.53\% \\ (6.67\%)} & \makecell{59.21\% \\ (6.76\%)} & \makecell{53.63\% \\ (48.35\%)} & \makecell{50.00\% \\ (11.38\%)} & \makecell{58.97\% \\ (44.20\%)} & \makecell{41.72\% \\ (18.10\%)} & - & \makecell{67.72\% \\ (22.36\%)} & \makecell{55.24\% \\ (34.17\%)} & \makecell{79.87\% \\ (26.33\%)} \\ \hline
+
+  \textbf{7} & \makecell{98.81\% \\ (30.51\%)} & \makecell{5.44\% \\ (0.34\%)} & \makecell{94.96\% \\ (83.16\%)} & \makecell{96.65\% \\ (61.78\%)} & \makecell{69.68\% \\ (18.19\%)} & \makecell{95.29\% \\ (45.94\%)} & \makecell{90.48\% \\ (5.30\%)} & - & \makecell{92.14\% \\ (70.12\%)} & \makecell{75.52\% \\ (64.60\%)} \\ \hline
+
+  \textbf{8} & \makecell{44.99\% \\ (4.67\%)} & \makecell{32.24\% \\ (5.32\%)} & \makecell{64.83\% \\ (58.62\%)} & \makecell{56.23\% \\ (43.31\%)} & \makecell{17.62\% \\ (9.04\%)} & \makecell{42.25\% \\ (19.88\%)} & \makecell{22.07\% \\ (6.50\%)} & \makecell{42.40\% \\ (23.09\%)} & - & \makecell{29.26\% \\ (24.11\%)} \\ \hline
+
+  \textbf{9} & \makecell{97.15\% \\ (20.21\%)} & \makecell{49.89\% \\ (1.88\%)} & \makecell{96.88\% \\ (70.27\%)} & \makecell{93.83\% \\ (59.10\%)} & \makecell{30.16\% \\ (27.78\%)} & \makecell{85.77\% \\ (42.07\%)} & \makecell{91.40\% \\ (22.82\%)} & \makecell{53.62\% \\ (46.60\%)} & \makecell{83.95\% \\ (64.90\%)} & - \\ \hline
+  \end{tabular}
+}
+\end{center}
 
 \chapter{Conclusion}
 
