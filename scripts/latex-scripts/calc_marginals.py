@@ -1,6 +1,9 @@
 """Parses the info file an adversarial attack generates and outputs
    valid latex table rows."""
 import re
+from collections import defaultdict
+import numpy as np
+
 
 def find_nth_character(str1, substr, n):
     pos = -1
@@ -10,17 +13,15 @@ def find_nth_character(str1, substr, n):
             return None
     return pos
 
+AS_targets_dict = defaultdict(list)
+AS_ignore_targets_dict = defaultdict(list)
 
-filename = "adv-info-entangled-weightdecay.txt"
-sources = []
+filename = "/home/stensootla/projects/adversarial-on-disentangled/entangled-weightdecay.txt"
 with open(filename, 'r') as f:
   for line in f.readlines():
     line = line.strip()
     cur_source = int(line[0])
-    if cur_source not in sources:
-      sources.append(cur_source)    
-      row = "\\textbf{{{}}}".format(cur_source)
-
+    
     c_target, c_ignore_target = re.findall(r'\(\d+/\d+\)', line)
 
     vals = list(map(lambda x: int(x), c_target[1:-1].split('/')))
@@ -29,13 +30,19 @@ with open(filename, 'r') as f:
     vals = list(map(lambda x: int(x), c_ignore_target[1:-1].split('/')))
     AS_ignore_target = round(vals[0] / vals[1] * 100, 2)
     
-    row += " & \makecell{{{:.2f}\% \\\\ ({:.2f}\%)}}".format(AS_ignore_target, AS_target)
-    if row.count('&') == 9: 
-      idx = find_nth_character(row, '&', len(sources))
-      if idx is not None:
-        row = row[:idx+1] + " - &" + row[idx+1:]
-      else:
-        row += ' & -'
-      row += " \\\\ \\hline"
-      print(row)
+    AS_targets_dict[cur_source].append(AS_target)
+    AS_ignore_targets_dict[cur_source].append(AS_ignore_target)
+    
+print("AS_ignore_target")
+s = ""
+for digit_class, AS_ignore_target_list in AS_ignore_targets_dict.items():
+  s += " & {:.2f}\%".format(round(np.mean(AS_ignore_target_list), 2))
+print(s)
+
+print("\nAS_target")
+s = ""
+for digit_class, AS_target_list in AS_targets_dict.items():
+  s += " & {:.2f}\%".format(round(np.mean(AS_target_list), 2))
+print(s)
+
   

@@ -73,21 +73,60 @@ Summarise your report concisely.
 \begin{center}
 {\tiny
   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \hline
+  \textbf{Source} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
+  \textbf{AS ignore-target} & 8.80\% & 82.58\% & 20.46\% & 16.52\% & 32.74\% & 43.58\% & 38.25\% & 40.10\% & 18.68\% & 64.22\% \\ \hline
+  \textbf{AS target} & 3.25\% & 34.05\% & 5.59\% & 6.15\% & 12.26\% & 10.88\% & 13.21\% & 11.85\% & 8.52\% & 19.30\% \\ \hline
+  \end{tabular}
+}
+\captionof{table}{Disentangled marginals}
+\end{center}
+
+\begin{center}
+{\tiny
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \hline
+  \textbf{Source} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
+  \textbf{AS ignore-target} & 5.87\% & 63.87\% & 11.49\% & 12.52\% & 64.10\% & 36.82\% & 26.99\% & 39.75\% & 16.21\% & 19.36\% \\ \hline
+  \textbf{AS target} & 1.88\% & 28.19\% & 3.24\% & 4.33\% & 13.48\% & 10.19\% & 8.81\% & 7.71\% & 5.71\% & 8.22\% \\ \hline
+  \end{tabular}
+}
+\captionof{table}{Entangled marginals}
+\end{center}
+
+\begin{center}
+{\tiny
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \hline
+  \textbf{Source} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
+  \textbf{AS ignore-target} & 3.21\% & 60.25\% & 7.43\% & 10.57\% & 53.79\% & 35.07\% & 25.06\% & 18.52\% & 23.28\% & 33.15\% \\ \hline
+  \textbf{AS target} & 0.86\% & 23.52\% & 1.46\% & 2.88\% & 10.88\% & 9.28\% & 6.34\% & 4.24\% & 8.24\% & 12.08\% \\ \hline
+  \end{tabular}
+}
+\captionof{table}{Entangled weight decay marginals}
+\end{center}
+
+\chapter{Appendix}
+
+
+\begin{center}
+{\tiny
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
   \cline{1-11}
   \multirow{2}{*}{\textbf{Source}}
   & \multicolumn{10}{ c| }{\textbf{Targets}}  \\ \cline {2-11}
   & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
-    \textbf{0} & - & \makecell{67.64\% \\ (0.00\%)} & \makecell{9.49\% \\ (5.11\%)} & \makecell{13.72\% \\ (2.83\%)} & \makecell{58.05\% \\ (16.63\%)} & \makecell{25.72\% \\ (15.15\%)} & \makecell{7.99\% \\ (5.86\%)} & \makecell{69.52\% \\ (35.18\%)} & \makecell{36.76\% \\ (30.46\%)} & \makecell{72.04\% \\ (30.37\%)} \\ \hline
-    \textbf{1} & \makecell{99.90\% \\ (0.21\%)} & - & \makecell{97.03\% \\ (90.88\%)} & \makecell{97.66\% \\ (67.62\%)} & \makecell{85.49\% \\ (55.85\%)} & \makecell{99.08\% \\ (51.78\%)} & \makecell{98.29\% \\ (45.40\%)} & \makecell{15.07\% \\ (4.79\%)} & \makecell{95.90\% \\ (80.02\%)} & \makecell{81.89\% \\ (56.66\%)} \\ \hline
-    \textbf{2} & \makecell{10.77\% \\ (1.23\%)} & \makecell{79.13\% \\ (8.73\%)} & - & \makecell{45.42\% \\ (19.31\%)} & \makecell{78.37\% \\ (31.44\%)} & \makecell{60.80\% \\ (12.62\%)} & \makecell{11.66\% \\ (4.46\%)} & \makecell{82.38\% \\ (53.60\%)} & \makecell{66.74\% \\ (60.43\%)} & \makecell{91.13\% \\ (19.82\%)} \\ \hline
-    \textbf{3} & \makecell{3.00\% \\ (0.12\%)} & \makecell{94.93\% \\ (7.55\%)} & \makecell{36.78\% \\ (31.16\%)} & - & \makecell{58.22\% \\ (11.69\%)} & \makecell{18.26\% \\ (12.59\%)} & \makecell{24.08\% \\ (4.74\%)} & \makecell{94.10\% \\ (50.57\%)} & \makecell{54.60\% \\ (48.11\%)} & \makecell{72.73\% \\ (50.62\%)} \\ \hline
-    \textbf{4} & \makecell{84.03\% \\ (10.81\%)} & \makecell{54.18\% \\ (1.11\%)} & \makecell{92.83\% \\ (83.60\%)} & \makecell{84.60\% \\ (33.62\%)} & - & \makecell{63.94\% \\ (32.50\%)} & \makecell{49.81\% \\ (21.03\%)} & \makecell{69.44\% \\ (30.43\%)} & \makecell{43.76\% \\ (28.43\%)} & \makecell{41.40\% \\ (36.44\%)} \\ \hline
-    \textbf{5} & \makecell{49.01\% \\ (11.04\%)} & \makecell{96.31\% \\ (4.35\%)} & \makecell{78.55\% \\ (25.79\%)} & \makecell{41.32\% \\ (32.72\%)} & \makecell{51.80\% \\ (15.31\%)} & - & \makecell{51.31\% \\ (18.11\%)} & \makecell{93.40\% \\ (45.12\%)} & \makecell{63.11\% \\ (53.49\%)} & \makecell{67.45\% \\ (44.75\%)} \\ \hline
-    \textbf{6} & \makecell{21.53\% \\ (6.67\%)} & \makecell{59.21\% \\ (6.76\%)} & \makecell{53.63\% \\ (48.35\%)} & \makecell{50.00\% \\ (11.38\%)} & \makecell{58.97\% \\ (44.20\%)} & \makecell{41.72\% \\ (18.10\%)} & - & \makecell{67.72\% \\ (22.36\%)} & \makecell{55.24\% \\ (34.17\%)} & \makecell{79.87\% \\ (26.33\%)} \\ \hline
-    \textbf{7} & \makecell{98.81\% \\ (30.51\%)} & \makecell{5.44\% \\ (0.34\%)} & \makecell{94.96\% \\ (83.16\%)} & \makecell{96.65\% \\ (61.78\%)} & \makecell{69.68\% \\ (18.19\%)} & \makecell{95.29\% \\ (45.94\%)} & \makecell{90.48\% \\ (5.30\%)} & - & \makecell{92.14\% \\ (70.12\%)} & \makecell{75.52\% \\ (64.60\%)} \\ \hline
-    \textbf{8} & \makecell{44.99\% \\ (4.67\%)} & \makecell{32.24\% \\ (5.32\%)} & \makecell{64.83\% \\ (58.62\%)} & \makecell{56.23\% \\ (43.31\%)} & \makecell{17.62\% \\ (9.04\%)} & \makecell{42.25\% \\ (19.88\%)} & \makecell{22.07\% \\ (6.50\%)} & \makecell{42.40\% \\ (23.09\%)} & - & \makecell{29.26\% \\ (24.11\%)} \\ \hline
-    \textbf{9} & \makecell{97.15\% \\ (20.21\%)} & \makecell{49.89\% \\ (1.88\%)} & \makecell{96.88\% \\ (70.27\%)} & \makecell{93.83\% \\ (59.10\%)} & \makecell{30.16\% \\ (27.78\%)} & \makecell{85.77\% \\ (42.07\%)} & \makecell{91.40\% \\ (22.82\%)} & \makecell{53.62\% \\ (46.60\%)} & \makecell{83.95\% \\ (64.90\%)} & - \\ \hline
-    \end{tabular}
+  \textbf{0} & - & \makecell{7.02\% \\ (0.00\%)} & \makecell{9.80\% \\ (5.74\%)} & \makecell{7.64\% \\ (4.29\%)} & \makecell{9.62\% \\ (1.88\%)} & \makecell{11.60\% \\ (5.86\%)} & \makecell{8.63\% \\ (5.43\%)} & \makecell{6.68\% \\ (0.10\%)} & \makecell{9.45\% \\ (5.67\%)} & \makecell{8.80\% \\ (0.31\%)} \\ \hline
+  \textbf{1} & \makecell{99.16\% \\ (0.00\%)} & - & \makecell{98.41\% \\ (93.66\%)} & \makecell{95.32\% \\ (4.48\%)} & \makecell{74.11\% \\ (44.89\%)} & \makecell{94.50\% \\ (10.42\%)} & \makecell{98.07\% \\ (26.55\%)} & \makecell{23.25\% \\ (13.57\%)} & \makecell{95.06\% \\ (73.08\%)} & \makecell{65.31\% \\ (39.78\%)} \\ \hline
+  \textbf{2} & \makecell{8.75\% \\ (1.01\%)} & \makecell{23.32\% \\ (0.43\%)} & - & \makecell{16.29\% \\ (5.93\%)} & \makecell{25.75\% \\ (4.79\%)} & \makecell{23.54\% \\ (1.58\%)} & \makecell{6.86\% \\ (2.29\%)} & \makecell{25.03\% \\ (12.78\%)} & \makecell{26.04\% \\ (21.08\%)} & \makecell{28.59\% \\ (0.44\%)} \\ \hline
+  \textbf{3} & \makecell{3.23\% \\ (0.58\%)} & \makecell{19.82\% \\ (0.34\%)} & \makecell{16.09\% \\ (12.37\%)} & - & \makecell{19.91\% \\ (0.81\%)} & \makecell{16.50\% \\ (14.61\%)} & \makecell{12.22\% \\ (1.90\%)} & \makecell{19.39\% \\ (1.70\%)} & \makecell{23.23\% \\ (18.40\%)} & \makecell{18.29\% \\ (4.60\%)} \\ \hline
+  \textbf{4} & \makecell{24.32\% \\ (0.37\%)} & \makecell{42.75\% \\ (0.49\%)} & \makecell{38.03\% \\ (24.18\%)} & \makecell{28.12\% \\ (6.60\%)} & - & \makecell{22.59\% \\ (4.10\%)} & \makecell{19.77\% \\ (11.01\%)} & \makecell{50.60\% \\ (7.13\%)} & \makecell{34.12\% \\ (25.46\%)} & \makecell{34.38\% \\ (30.99\%)} \\ \hline
+  \textbf{5} & \makecell{46.78\% \\ (3.42\%)} & \makecell{45.72\% \\ (0.92\%)} & \makecell{64.34\% \\ (8.55\%)} & \makecell{34.30\% \\ (26.49\%)} & \makecell{30.23\% \\ (7.59\%)} & - & \makecell{51.84\% \\ (11.15\%)} & \makecell{41.29\% \\ (1.72\%)} & \makecell{49.41\% \\ (31.49\%)} & \makecell{28.35\% \\ (6.56\%)} \\ \hline
+  \textbf{6} & \makecell{28.31\% \\ (6.89\%)} & \makecell{34.79\% \\ (2.51\%)} & \makecell{41.54\% \\ (32.64\%)} & \makecell{37.96\% \\ (6.35\%)} & \makecell{37.31\% \\ (22.98\%)} & \makecell{32.55\% \\ (10.34\%)} & - & \makecell{39.48\% \\ (2.40\%)} & \makecell{49.02\% \\ (28.82\%)} & \makecell{43.31\% \\ (5.98\%)} \\ \hline
+  \textbf{7} & \makecell{46.96\% \\ (2.03\%)} & \makecell{3.51\% \\ (0.11\%)} & \makecell{38.03\% \\ (23.94\%)} & \makecell{47.00\% \\ (2.54\%)} & \makecell{37.46\% \\ (5.23\%)} & \makecell{50.65\% \\ (5.63\%)} & \makecell{43.61\% \\ (0.60\%)} & - & \makecell{51.19\% \\ (29.52\%)} & \makecell{42.53\% \\ (37.01\%)} \\ \hline
+  \textbf{8} & \makecell{26.31\% \\ (0.91\%)} & \makecell{13.01\% \\ (1.47\%)} & \makecell{31.15\% \\ (25.29\%)} & \makecell{23.31\% \\ (13.83\%)} & \makecell{11.44\% \\ (5.95\%)} & \makecell{20.38\% \\ (11.75\%)} & \makecell{22.88\% \\ (6.85\%)} & \makecell{10.97\% \\ (5.37\%)} & - & \makecell{8.69\% \\ (5.26\%)} \\ \hline
+  \textbf{9} & \makecell{80.48\% \\ (0.80\%)} & \makecell{40.13\% \\ (1.77\%)} & \makecell{79.96\% \\ (5.46\%)} & \makecell{81.37\% \\ (22.60\%)} & \makecell{38.78\% \\ (36.85\%)} & \makecell{74.43\% \\ (24.06\%)} & \makecell{75.00\% \\ (3.90\%)} & \makecell{27.42\% \\ (20.96\%)} & \makecell{80.37\% \\ (57.27\%)} & - \\ \hline
+     \end{tabular}
 }
 \captionof{table}{Disentangled}
 \end{center}
@@ -100,16 +139,16 @@ Summarise your report concisely.
   \multirow{2}{*}{\textbf{Source}}
   & \multicolumn{10}{ c| }{\textbf{Targets}}  \\ \cline {2-11}
   & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
-  \textbf{0} & - & \makecell{1.15\% \\ (0.00\%)} & \makecell{1.04\% \\ (0.00\%)} & \makecell{0.84\% \\ (0.00\%)} & \makecell{0.83\% \\ (0.00\%)} & \makecell{1.26\% \\ (0.23\%)} & \makecell{1.39\% \\ (0.53\%)} & \makecell{1.25\% \\ (0.10\%)} & \makecell{0.84\% \\ (0.21\%)} & \makecell{1.25\% \\ (0.10\%)} \\ \hline
-  \textbf{1} & \makecell{1.35\% \\ (0.00\%)} & - & \makecell{1.97\% \\ (0.20\%)} & \makecell{0.91\% \\ (0.10\%)} & \makecell{1.45\% \\ (0.10\%)} & \makecell{1.94\% \\ (0.11\%)} & \makecell{1.50\% \\ (0.21\%)} & \makecell{1.09\% \\ (0.10\%)} & \makecell{1.88\% \\ (0.63\%)} & \makecell{1.22\% \\ (0.00\%)} \\ \hline
-  \textbf{2} & \makecell{3.38\% \\ (0.55\%)} & \makecell{3.73\% \\ (0.41\%)} & - & \makecell{3.68\% \\ (0.63\%)} & \makecell{3.85\% \\ (0.11\%)} & \makecell{3.70\% \\ (0.00\%)} & \makecell{4.51\% \\ (0.34\%)} & \makecell{3.56\% \\ (0.52\%)} & \makecell{3.44\% \\ (0.67\%)} & \makecell{3.75\% \\ (0.11\%)} \\ \hline
-  \textbf{3} & \makecell{2.11\% \\ (0.11\%)} & \makecell{3.23\% \\ (0.00\%)} & \makecell{3.25\% \\ (0.54\%)} & - & \makecell{3.86\% \\ (0.00\%)} & \makecell{3.44\% \\ (1.35\%)} & \makecell{3.41\% \\ (0.00\%)} & \makecell{4.52\% \\ (0.32\%)} & \makecell{3.73\% \\ (0.34\%)} & \makecell{2.05\% \\ (0.32\%)} \\ \hline
-  \textbf{4} & \makecell{4.74\% \\ (0.11\%)} & \makecell{4.31\% \\ (0.22\%)} & \makecell{5.72\% \\ (0.11\%)} & \makecell{5.13\% \\ (0.11\%)} & - & \makecell{4.11\% \\ (0.00\%)} & \makecell{3.05\% \\ (0.11\%)} & \makecell{4.66\% \\ (0.22\%)} & \makecell{4.57\% \\ (0.22\%)} & \makecell{4.68\% \\ (3.48\%)} \\ \hline
-  \textbf{5} & \makecell{4.25\% \\ (0.36\%)} & \makecell{4.09\% \\ (0.00\%)} & \makecell{4.53\% \\ (0.00\%)} & \makecell{5.70\% \\ (1.61\%)} & \makecell{4.80\% \\ (0.12\%)} & - & \makecell{4.53\% \\ (0.86\%)} & \makecell{3.95\% \\ (0.00\%)} & \makecell{5.77\% \\ (1.35\%)} & \makecell{4.79\% \\ (0.61\%)} \\ \hline
-  \textbf{6} & \makecell{1.52\% \\ (0.54\%)} & \makecell{1.87\% \\ (0.00\%)} & \makecell{1.43\% \\ (0.00\%)} & \makecell{2.40\% \\ (0.22\%)} & \makecell{1.98\% \\ (0.44\%)} & \makecell{1.87\% \\ (0.35\%)} & - & \makecell{2.51\% \\ (0.00\%)} & \makecell{1.84\% \\ (0.11\%)} & \makecell{2.28\% \\ (0.00\%)} \\ \hline
-  \textbf{7} & \makecell{4.19\% \\ (0.11\%)} & \makecell{3.79\% \\ (0.42\%)} & \makecell{4.23\% \\ (1.06\%)} & \makecell{3.67\% \\ (0.22\%)} & \makecell{4.98\% \\ (0.11\%)} & \makecell{3.89\% \\ (0.00\%)} & \makecell{4.42\% \\ (0.00\%)} & - & \makecell{3.28\% \\ (0.11\%)} & \makecell{4.41\% \\ (2.26\%)} \\ \hline
-  \textbf{8} & \makecell{5.71\% \\ (0.46\%)} & \makecell{5.02\% \\ (0.00\%)} & \makecell{4.16\% \\ (0.46\%)} & \makecell{3.96\% \\ (0.68\%)} & \makecell{5.23\% \\ (0.00\%)} & \makecell{5.24\% \\ (1.12\%)} & \makecell{4.62\% \\ (0.23\%)} & \makecell{4.58\% \\ (0.11\%)} & - & \makecell{4.00\% \\ (0.46\%)} \\ \hline
-  \textbf{9} & \makecell{3.21\% \\ (0.33\%)} & \makecell{2.69\% \\ (0.11\%)} & \makecell{3.02\% \\ (0.00\%)} & \makecell{3.00\% \\ (0.75\%)} & \makecell{4.66\% \\ (1.11\%)} & \makecell{4.14\% \\ (0.24\%)} & \makecell{4.19\% \\ (0.00\%)} & \makecell{4.09\% \\ (0.75\%)} & \makecell{3.64\% \\ (0.55\%)} & - \\ \hline
+  \textbf{0} & - & \makecell{3.33\% \\ (0.00\%)} & \makecell{8.67\% \\ (2.82\%)} & \makecell{6.93\% \\ (2.10\%)} & \makecell{6.33\% \\ (0.10\%)} & \makecell{5.49\% \\ (1.83\%)} & \makecell{4.80\% \\ (2.24\%)} & \makecell{3.96\% \\ (0.00\%)} & \makecell{9.04\% \\ (5.99\%)} & \makecell{4.28\% \\ (1.88\%)} \\ \hline
+  \textbf{1} & \makecell{60.50\% \\ (0.21\%)} & - & \makecell{75.57\% \\ (51.43\%)} & \makecell{71.26\% \\ (40.99\%)} & \makecell{61.83\% \\ (24.38\%)} & \makecell{66.78\% \\ (14.38\%)} & \makecell{50.48\% \\ (18.72\%)} & \makecell{62.99\% \\ (28.26\%)} & \makecell{74.19\% \\ (56.95\%)} & \makecell{51.22\% \\ (18.36\%)} \\ \hline
+  \textbf{2} & \makecell{13.65\% \\ (1.53\%)} & \makecell{4.04\% \\ (0.10\%)} & - & \makecell{14.32\% \\ (11.05\%)} & \makecell{10.55\% \\ (0.66\%)} & \makecell{13.62\% \\ (0.24\%)} & \makecell{10.94\% \\ (1.80\%)} & \makecell{8.49\% \\ (1.15\%)} & \makecell{16.67\% \\ (11.00\%)} & \makecell{11.15\% \\ (1.61\%)} \\ \hline
+  \textbf{3} & \makecell{8.89\% \\ (0.56\%)} & \makecell{5.50\% \\ (0.11\%)} & \makecell{8.79\% \\ (4.45\%)} & - & \makecell{21.85\% \\ (0.33\%)} & \makecell{14.23\% \\ (10.80\%)} & \makecell{12.49\% \\ (0.57\%)} & \makecell{5.60\% \\ (0.54\%)} & \makecell{26.02\% \\ (19.91\%)} & \makecell{9.30\% \\ (1.73\%)} \\ \hline
+  \textbf{4} & \makecell{70.34\% \\ (2.76\%)} & \makecell{42.32\% \\ (0.33\%)} & \makecell{68.65\% \\ (9.35\%)} & \makecell{89.19\% \\ (10.26\%)} & - & \makecell{77.03\% \\ (4.84\%)} & \makecell{23.84\% \\ (3.95\%)} & \makecell{71.62\% \\ (4.77\%)} & \makecell{75.28\% \\ (30.85\%)} & \makecell{58.65\% \\ (54.19\%)} \\ \hline
+  \textbf{5} & \makecell{34.34\% \\ (2.67\%)} & \makecell{22.46\% \\ (0.25\%)} & \makecell{47.30\% \\ (4.90\%)} & \makecell{36.06\% \\ (24.04\%)} & \makecell{36.29\% \\ (0.37\%)} & - & \makecell{25.98\% \\ (6.62\%)} & \makecell{36.05\% \\ (0.37\%)} & \makecell{57.67\% \\ (43.56\%)} & \makecell{35.26\% \\ (8.97\%)} \\ \hline
+  \textbf{6} & \makecell{23.43\% \\ (16.49\%)} & \makecell{7.59\% \\ (0.22\%)} & \makecell{29.71\% \\ (7.35\%)} & \makecell{42.27\% \\ (8.71\%)} & \makecell{14.30\% \\ (6.60\%)} & \makecell{24.36\% \\ (11.59\%)} & - & \makecell{37.38\% \\ (0.00\%)} & \makecell{41.28\% \\ (25.68\%)} & \makecell{22.61\% \\ (2.61\%)} \\ \hline
+  \textbf{7} & \makecell{33.44\% \\ (1.55\%)} & \makecell{24.53\% \\ (0.32\%)} & \makecell{29.70\% \\ (6.77\%)} & \makecell{32.36\% \\ (15.10\%)} & \makecell{53.05\% \\ (6.09\%)} & \makecell{39.25\% \\ (1.22\%)} & \makecell{55.95\% \\ (0.45\%)} & - & \makecell{54.59\% \\ (8.72\%)} & \makecell{34.88\% \\ (29.17\%)} \\ \hline
+  \textbf{8} & \makecell{13.36\% \\ (1.03\%)} & \makecell{7.41\% \\ (0.11\%)} & \makecell{19.88\% \\ (8.44\%)} & \makecell{34.31\% \\ (28.09\%)} & \makecell{10.35\% \\ (1.25\%)} & \makecell{22.35\% \\ (5.74\%)} & \makecell{10.06\% \\ (1.73\%)} & \makecell{18.65\% \\ (0.80\%)} & - & \makecell{9.49\% \\ (4.23\%)} \\ \hline
+  \textbf{9} & \makecell{8.41\% \\ (1.44\%)} & \makecell{6.57\% \\ (0.32\%)} & \makecell{32.33\% \\ (1.72\%)} & \makecell{36.72\% \\ (20.34\%)} & \makecell{14.97\% \\ (11.20\%)} & \makecell{24.48\% \\ (7.67\%)} & \makecell{7.81\% \\ (0.23\%)} & \makecell{12.81\% \\ (6.35\%)} & \makecell{30.10\% \\ (24.70\%)} & - \\ \hline
   \end{tabular}
 }
 \captionof{table}{Entangled}
@@ -122,16 +161,16 @@ Summarise your report concisely.
   \multirow{2}{*}{\textbf{Source}}
   & \multicolumn{10}{ c| }{\textbf{Targets}}  \\ \cline {2-11}
   & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
-  \textbf{0} & - & \makecell{1.48\% \\ (0.00\%)} & \makecell{1.59\% \\ (0.00\%)} & \makecell{1.79\% \\ (0.11\%)} & \makecell{1.68\% \\ (0.00\%)} & \makecell{2.19\% \\ (0.46\%)} & \makecell{1.51\% \\ (0.32\%)} & \makecell{1.68\% \\ (0.00\%)} & \makecell{1.39\% \\ (0.11\%)} & \makecell{2.40\% \\ (0.21\%)} \\ \hline
-  \textbf{1} & \makecell{1.25\% \\ (0.00\%)} & - & \makecell{1.69\% \\ (0.20\%)} & \makecell{0.81\% \\ (0.00\%)} & \makecell{1.25\% \\ (0.21\%)} & \makecell{1.15\% \\ (0.11\%)} & \makecell{1.07\% \\ (0.21\%)} & \makecell{1.09\% \\ (0.10\%)} & \makecell{1.89\% \\ (0.84\%)} & \makecell{0.61\% \\ (0.00\%)} \\ \hline
-  \textbf{2} & \makecell{5.25\% \\ (0.91\%)} & \makecell{4.53\% \\ (0.22\%)} & - & \makecell{4.74\% \\ (1.21\%)} & \makecell{4.65\% \\ (0.23\%)} & \makecell{4.83\% \\ (0.00\%)} & \makecell{5.10\% \\ (0.46\%)} & \makecell{6.08\% \\ (0.96\%)} & \makecell{3.93\% \\ (1.15\%)} & \makecell{3.98\% \\ (0.00\%)} \\ \hline
-  \textbf{3} & \makecell{4.43\% \\ (0.12\%)} & \makecell{4.59\% \\ (0.00\%)} & \makecell{5.08\% \\ (0.92\%)} & - & \makecell{5.76\% \\ (0.12\%)} & \makecell{7.33\% \\ (3.21\%)} & \makecell{4.54\% \\ (0.00\%)} & \makecell{5.43\% \\ (0.69\%)} & \makecell{5.88\% \\ (1.32\%)} & \makecell{5.98\% \\ (0.58\%)} \\ \hline
-  \textbf{4} & \makecell{6.05\% \\ (0.00\%)} & \makecell{7.60\% \\ (0.25\%)} & \makecell{7.91\% \\ (0.00\%)} & \makecell{8.35\% \\ (0.12\%)} & - & \makecell{10.59\% \\ (0.27\%)} & \makecell{6.62\% \\ (0.25\%)} & \makecell{10.78\% \\ (0.86\%)} & \makecell{7.82\% \\ (0.38\%)} & \makecell{7.10\% \\ (5.11\%)} \\ \hline
-  \textbf{5} & \makecell{8.94\% \\ (0.81\%)} & \makecell{7.27\% \\ (0.00\%)} & \makecell{7.95\% \\ (0.00\%)} & \makecell{7.90\% \\ (2.59\%)} & \makecell{7.29\% \\ (0.14\%)} & - & \makecell{7.77\% \\ (1.50\%)} & \makecell{7.57\% \\ (0.41\%)} & \makecell{9.13\% \\ (1.61\%)} & \makecell{8.19\% \\ (1.09\%)} \\ \hline
-  \textbf{6} & \makecell{2.10\% \\ (0.77\%)} & \makecell{2.51\% \\ (0.00\%)} & \makecell{2.85\% \\ (0.11\%)} & \makecell{2.08\% \\ (0.11\%)} & \makecell{2.20\% \\ (0.77\%)} & \makecell{2.12\% \\ (0.35\%)} & - & \makecell{3.16\% \\ (0.00\%)} & \makecell{2.87\% \\ (0.33\%)} & \makecell{3.18\% \\ (0.00\%)} \\ \hline
-  \textbf{7} & \makecell{4.00\% \\ (0.23\%)} & \makecell{3.65\% \\ (0.43\%)} & \makecell{4.89\% \\ (1.30\%)} & \makecell{3.43\% \\ (0.33\%)} & \makecell{4.49\% \\ (0.12\%)} & \makecell{4.99\% \\ (0.12\%)} & \makecell{5.19\% \\ (0.00\%)} & - & \makecell{4.18\% \\ (0.23\%)} & \makecell{3.96\% \\ (2.09\%)} \\ \hline
-  \textbf{8} & \makecell{8.12\% \\ (0.92\%)} & \makecell{9.40\% \\ (0.64\%)} & \makecell{6.85\% \\ (1.45\%)} & \makecell{9.87\% \\ (2.47\%)} & \makecell{8.45\% \\ (0.13\%)} & \makecell{8.57\% \\ (0.86\%)} & \makecell{8.75\% \\ (0.52\%)} & \makecell{9.59\% \\ (0.39\%)} & - & \makecell{9.34\% \\ (1.56\%)} \\ \hline
-  \textbf{9} & \makecell{5.66\% \\ (0.00\%)} & \makecell{5.90\% \\ (0.12\%)} & \makecell{6.16\% \\ (0.00\%)} & \makecell{8.21\% \\ (0.91\%)} & \makecell{6.25\% \\ (2.24\%)} & \makecell{5.74\% \\ (0.00\%)} & \makecell{6.19\% \\ (0.00\%)} & \makecell{9.36\% \\ (4.62\%)} & \makecell{5.49\% \\ (0.36\%)} & - \\ \hline
+  \textbf{0} & - & \makecell{2.22\% \\ (0.00\%)} & \makecell{5.60\% \\ (1.27\%)} & \makecell{4.95\% \\ (1.90\%)} & \makecell{2.11\% \\ (0.00\%)} & \makecell{4.15\% \\ (0.92\%)} & \makecell{2.05\% \\ (1.08\%)} & \makecell{1.68\% \\ (0.00\%)} & \makecell{3.74\% \\ (2.14\%)} & \makecell{2.40\% \\ (0.42\%)} \\ \hline
+\textbf{1} & \makecell{70.15\% \\ (2.19\%)} & - & \makecell{75.69\% \\ (59.23\%)} & \makecell{65.31\% \\ (24.92\%)} & \makecell{39.46\% \\ (3.43\%)} & \makecell{56.55\% \\ (8.51\%)} & \makecell{39.42\% \\ (16.67\%)} & \makecell{64.58\% \\ (50.20\%)} & \makecell{78.83\% \\ (36.27\%)} & \makecell{52.23\% \\ (10.24\%)} \\ \hline
+\textbf{2} & \makecell{8.79\% \\ (2.05\%)} & \makecell{4.53\% \\ (0.11\%)} & - & \makecell{6.61\% \\ (3.41\%)} & \makecell{6.69\% \\ (0.68\%)} & \makecell{9.53\% \\ (0.12\%)} & \makecell{8.34\% \\ (1.16\%)} & \makecell{7.46\% \\ (1.71\%)} & \makecell{7.74\% \\ (3.35\%)} & \makecell{7.19\% \\ (0.55\%)} \\ \hline
+\textbf{3} & \makecell{9.45\% \\ (1.08\%)} & \makecell{5.85\% \\ (0.11\%)} & \makecell{9.47\% \\ (6.47\%)} & - & \makecell{14.82\% \\ (0.00\%)} & \makecell{14.01\% \\ (9.51\%)} & \makecell{12.02\% \\ (0.74\%)} & \makecell{8.44\% \\ (2.43\%)} & \makecell{9.60\% \\ (4.32\%)} & \makecell{11.51\% \\ (1.27\%)} \\ \hline
+\textbf{4} & \makecell{54.66\% \\ (2.64\%)} & \makecell{28.52\% \\ (1.62\%)} & \makecell{57.04\% \\ (17.21\%)} & \makecell{73.44\% \\ (5.99\%)} & - & \makecell{74.53\% \\ (2.28\%)} & \makecell{25.22\% \\ (3.95\%)} & \makecell{60.29\% \\ (12.50\%)} & \makecell{64.06\% \\ (10.97\%)} & \makecell{46.33\% \\ (40.72\%)} \\ \hline
+\textbf{5} & \makecell{40.51\% \\ (13.69\%)} & \makecell{20.58\% \\ (1.37\%)} & \makecell{42.05\% \\ (3.56\%)} & \makecell{32.15\% \\ (19.35\%)} & \makecell{39.34\% \\ (0.69\%)} & - & \makecell{33.92\% \\ (8.72\%)} & \makecell{34.32\% \\ (6.89\%)} & \makecell{37.85\% \\ (22.15\%)} & \makecell{34.92\% \\ (7.09\%)} \\ \hline
+\textbf{6} & \makecell{18.98\% \\ (14.46\%)} & \makecell{8.28\% \\ (1.20\%)} & \makecell{35.20\% \\ (11.62\%)} & \makecell{33.00\% \\ (3.51\%)} & \makecell{15.51\% \\ (4.84\%)} & \makecell{19.98\% \\ (5.52\%)} & - & \makecell{31.84\% \\ (0.33\%)} & \makecell{39.14\% \\ (14.33\%)} & \makecell{23.60\% \\ (1.21\%)} \\ \hline
+\textbf{7} & \makecell{13.27\% \\ (1.72\%)} & \makecell{7.84\% \\ (1.18\%)} & \makecell{21.82\% \\ (11.18\%)} & \makecell{18.72\% \\ (8.08\%)} & \makecell{19.12\% \\ (1.04\%)} & \makecell{18.45\% \\ (1.12\%)} & \makecell{23.76\% \\ (0.12\%)} & - & \makecell{29.38\% \\ (3.72\%)} & \makecell{14.30\% \\ (10.01\%)} \\ \hline
+\textbf{8} & \makecell{19.11\% \\ (4.97\%)} & \makecell{15.19\% \\ (1.42\%)} & \makecell{37.68\% \\ (28.19\%)} & \makecell{33.12\% \\ (18.57\%)} & \makecell{16.25\% \\ (0.40\%)} & \makecell{17.43\% \\ (3.86\%)} & \makecell{25.20\% \\ (4.96\%)} & \makecell{30.09\% \\ (6.18\%)} & - & \makecell{15.43\% \\ (5.58\%)} \\ \hline
+\textbf{9} & \makecell{25.66\% \\ (2.89\%)} & \makecell{16.65\% \\ (1.50\%)} & \makecell{49.94\% \\ (11.74\%)} & \makecell{56.67\% \\ (22.12\%)} & \makecell{13.68\% \\ (6.49\%)} & \makecell{37.21\% \\ (8.22\%)} & \makecell{21.00\% \\ (0.49\%)} & \makecell{38.96\% \\ (35.61\%)} & \makecell{38.54\% \\ (19.69\%)} & - \\ \hline
   \end{tabular}
 }
 \captionof{table}{Entangled with weight decay}
