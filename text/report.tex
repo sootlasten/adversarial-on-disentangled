@@ -10,6 +10,8 @@
 \usepackage{amsmath}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage{xcolor}
+\newcommand\todo[1]{\textcolor{red}{#1}}
 
 \newtheorem{theorem}{THEOREM}
 \newtheorem{lemma}[theorem]{LEMMA}
@@ -77,18 +79,44 @@ Summarise your report concisely.
 
 \noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since the leading conjecture explaining the presence of adversarial examples posits that they come about due to excessive linearity of today's pattern recognizers \cite{explaining-and-harnessing}. However, models whose internal representations are disentangled are arguably less linear, since they are implicitly guided to capture the main generative factors of the data, which in datasets with enough complexity are non-linear with respect to inputs in the pixel space. This suggests that disentangled models could be less prone to be fooled by adversarial examples. \\
 
-\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset, as well as for CelebA, a large-scale dataset of celebrety faces. Surprisingly, it was found that disentangled generative models are actually \textit{less} robust to attacks on both datasets, contradicting our initial rationale. \\
+\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset, as well as for CelebA, a large-scale dataset of celebrety faces. Surprisingly, it was found that disentangled generative models are actually \textit{less} robust to attacks on both datasets, contradicting our initial rationale. This stands in stark contrast to previous work by Alemi et. al. \cite{deep-variational-bottleneck}, which performed similar analysis for supervised models, but arrived at the opposite conclusion, highlighting a fundamental difference between generative and discriminative models when it comes to adversarial examples. \\
 
 \noindent The thesis is organized as follows. In chapter 1, a sufficiently in-depth overview of variational autoencoders, disentanglement, and adversarial examples is given. Chapter 2 outlines the experimental methodology, and provides exact details of the analyses done in this thesis for reproducibility. Chapter 3 gives the results of the experiments. 
 
 \chapter{Related work and background}
 
-This chapter introduces the preliminary topics that are integral to understanding and fully appreciating the methods and results of this thesis. In addition, it provides an overview of the most important previous works that are closely related to ours. The first section of this chapter familiarizes the reader with variational autoencoders. The second section builds on the first, discussing how to regularize generative models such that the learnt representations would be disentangled. The last section introduces the general problem of adversarial examples, and discusses their applicability to generative models.
+This chapter introduces the preliminary topics that are integral to understanding the methods and results of this thesis. In addition, it provides an overview of the most important previous works that are closely related to ours. However, the reader is assumed to be comfortable with the basics of discriminative methods in machine learning. The first section of this chapter familiarizes the reader with variational autoencoders. The second section builds on the first, discussing how to regularize generative models such that the learnt representations would be disentangled. The last section introduces the general problem of adversarial examples, and discusses their applicability to generative models.
 
 \section{Variational Autoencoders}
-\section{Disentangled representations}
-\section{Adversarial examples}
 
+To fully appreciate variational autoencoders and the problems they are best suited to tackle, it is paramount to first be aware of the context that they operate in. To that end, a brief introduction to the probabilistic view of pattern recognition follows. \\
+
+\noindent Usually, in the case of conventional supervised learning, one is concerned about capturing the probability distribution of some predefined labels, conditioned on a set of inputs. For example, in classification, we try to model the categorical distribution of possible classes, given an image (or some set of higher-level features derived from raw pixels) belonging to one of the categories. Relatedly, we could be interested in continuous conditional distributions, as one might be when trying to estimate the future earnings of a company based on its current key performance indicators. \\
+
+\noindent As a concrete example, due to Bishop \cite{bishop-prml}, of how viewing machine learning through a probabilistc lens can yield useful insights into well-known methodologies, let us see how the ubiquitous sum-of-squares error function with L2 regualarization comes about naturally from a principled probabilistic approach. Suppose we have $N$ training inputs $\mathbf{x} = (x_1, x_2, \dots, x_n)^T$, and their corresponding one-dimensional target values $\mathbf{t} = (t_1, t_2, \dots, t_n)^T$. Our uncertainty about the targets can be modelled as a Gaussian with a fixed precision $\beta$, whose mean is represented by a parameterized function $y(x, \mathbf{\theta})$ (e.g. a neural network):
+
+\[ p(t|x, \mathbf{\theta}, \beta)  = \mathcal{N} (t | y(x, \mathbf{\theta}), \beta^{-1}). \]
+
+If we further assume that the given targets were drawn independently from this normal distribution, we can estimate the unknown parameters $\theta$ and $\beta$ by maximizing the likelihood of the data:
+
+\[ p(t_1, t_2, \dots, t_n) = \prod_{n=1}^N \mathcal{N}(t_n | y(x_n, \mathbf{\theta}), \beta^{-1}). \]
+
+\todo{TODO! Finish this subsection about discriminative probabilistic modelling} \\
+
+\noindent So far we have dealt with modelling the conditional distribution of the targets, given the inputs. Sometimes, however, we might be after the marginal distribution of the input data itself. Having such an object in hand, we are able to determine if an observed example has an unusually low probability of occurrence for anomaly detection \cite{vae-anomaly}, fill out missing dimensions of incomplete datapoints \cite{missing-data}, or sample new, realistic datapoints from the learnt density function \cite{vaegan}.  \\
+
+\noindent Unfortunately, capturing the marginal distribution $p(x)$ is somewhat more involved than it was in the conditional case discussed previously. This is because the densities of the complicated distributions that have to be used to accurately model high-dimensional, multi-modal datapoints do not have closed-form derivatives when multiplied together. A canonical model with an intractable likelihood function is the Gaussian mixture model \cite{gaussian-mixture}, which as the name suggests, is comprised of a linear combination of normal distributions. \\ 
+
+\todo{TODO! Finish subsection illustrating the MoG has intractable derivatives} \\
+
+\noindent
+
+% 1. what are variational autoencoders
+% 2. Gumbel softmax trick
+
+\section{Disentangled representations}
+
+\section{Adversarial examples}
 \chapter{Methods}
 
 \chapter{Results}
