@@ -3,9 +3,13 @@ results/
 __pycache__/
 *.swp
 *.ckpt
+
 text/*.toc
 text/*.gz
 text/*.aux
 text/*.log
 text/*.dvi
+text/*.bbl
+text/*.blg
+text/*.pdf
 
