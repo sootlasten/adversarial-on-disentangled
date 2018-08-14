@@ -11,7 +11,13 @@
 \usepackage{multirow}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{mathtools}
+
 \newcommand\todo[1]{\textcolor{red}{#1}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\graphicspath{ {/home/stensootla/projects/adversarial-on-disentangled/text/figures/} }
 
 \newtheorem{theorem}{THEOREM}
 \newtheorem{lemma}[theorem]{LEMMA}
@@ -39,7 +45,7 @@ $\Box$ \end{quotation}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\title{  	{ \includegraphics[scale=.5,natwidth=294,natheight=84]{ucl_logo.png}}\\
+\title{{ \includegraphics[scale=.5,natwidth=294,natheight=84]{ucl_logo}}\\
 {{\Huge Investigating the Robustness of Disentangled Variational Autoencoders to Adversarial Examples}}\\}
 \date{Submission date: 10.08.2018}
 \author{Sten Sootla\thanks{
@@ -85,31 +91,96 @@ Summarise your report concisely.
 
 \chapter{Related work and background}
 
-This chapter introduces the preliminary topics that are integral to understanding the methods and results of this thesis. In addition, it provides an overview of the most important previous works that are closely related to ours. However, the reader is assumed to be comfortable with the basics of discriminative methods in machine learning. The first section of this chapter familiarizes the reader with variational autoencoders. The second section builds on the first, discussing how to regularize generative models such that the learnt representations would be disentangled. The last section introduces the general problem of adversarial examples, and discusses their applicability to generative models.
+This chapter introduces the preliminary topics that are integral to understanding the methods and results of this thesis. In addition, it provides an overview of the most important previous works that are closely related to ours. However, the reader is assumed to be comfortable with the basics of discriminative methods in machine learning. The first section of this chapter familiarizes the reader with a probabilistic approach to pattern recognition. The second section builds on the first, introducing the variational autoencoder. The third section focusses on how to regularize generative models such that the learnt representations would be disentangled. The last section introduces the general problem of adversarial examples, and discusses their applicability to generative models.
 
-\section{Variational Autoencoders}
+\section{Probabilistic learning and inference}
 
 To fully appreciate variational autoencoders and the problems they are best suited to tackle, it is paramount to first be aware of the context that they operate in. To that end, a brief introduction to the probabilistic view of pattern recognition follows. \\
 
+\subsection{Discriminative approach}
+
 \noindent Usually, in the case of conventional supervised learning, one is concerned about capturing the probability distribution of some predefined labels, conditioned on a set of inputs. For example, in classification, we try to model the categorical distribution of possible classes, given an image (or some set of higher-level features derived from raw pixels) belonging to one of the categories. Relatedly, we could be interested in continuous conditional distributions, as one might be when trying to estimate the future earnings of a company based on its current key performance indicators. \\
 
-\noindent As a concrete example, due to Bishop \cite{bishop-prml}, of how viewing machine learning through a probabilistc lens can yield useful insights into well-known methodologies, let us see how the ubiquitous sum-of-squares error function with L2 regualarization comes about naturally from a principled probabilistic approach. Suppose we have $N$ training inputs $\mathbf{x} = (x_1, x_2, \dots, x_n)^T$, and their corresponding one-dimensional target values $\mathbf{t} = (t_1, t_2, \dots, t_n)^T$. Our uncertainty about the targets can be modelled as a Gaussian with a fixed precision $\beta$, whose mean is represented by a parameterized function $y(x, \mathbf{\theta})$ (e.g. a neural network):
+\noindent As a concrete example, due to Bishop \cite{bishop-prml}, of how viewing machine learning through a probabilistc lens can yield useful insights into well-known methodologies, let us see how the ubiquitous sum-of-squares error function comes about naturally from a principled probabilistic approach. Suppose we have $N$ possibly high-dimensional training inputs $\mathbf{\boldsymbol{X}} = \{\boldsymbol{x}^{(1)}, \boldsymbol{x}^{(2)}, \dots, \boldsymbol{x}^{(n)}\}$, and their corresponding one-dimensional target values $\mathbf{t} = \{t^{(1)}, t^{(2)}, \dots, t^{(n)}\}$. Our uncertainty about the targets can be modelled as a Gaussian with a fixed precision $\beta$, whose mean is represented by a parameterized function $y(x, \boldsymbol{\theta})$ (e.g. a neural network):
 
-\[ p(t|x, \mathbf{\theta}, \beta)  = \mathcal{N} (t | y(x, \mathbf{\theta}), \beta^{-1}). \]
+\[ p(t^{(i)}|\boldsymbol{x}^{(i)}, \boldsymbol{\theta}, \beta)  = \mathcal{N} (t^{(i)} | y(\boldsymbol{x}^{(i)}, \boldsymbol{\theta}), \beta^{-1}). \]
 
-If we further assume that the given targets were drawn independently from this normal distribution, we can estimate the unknown parameters $\theta$ and $\beta$ by maximizing the likelihood of the data:
+\noindent If we further assume that the given targets were drawn independently from this normal distribution, we can estimate the unknown parameters $\boldsymbol{\theta}$ and $\beta$ by maximizing the log-likelihood of the targets:
 
-\[ p(t_1, t_2, \dots, t_n) = \prod_{n=1}^N \mathcal{N}(t_n | y(x_n, \mathbf{\theta}), \beta^{-1}). \]
+\begin{gather*}
+\argmax_{\boldsymbol{\theta}} \log p(\mathbf{t}; \boldsymbol{\theta}) = \\
+\argmax_{\boldsymbol{\theta}} \log \prod_{n=1}^N \mathcal{N}(t^{(n)} | y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}), \beta^{-1}) = \\
+\argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \log \mathcal{N}(t^{(n)} | y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}), \beta^{-1}) = \\
+\argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \log \Big(\frac{\beta}{2 \pi}\Big)^{\frac{1}{2}} e^{-\frac{\beta}{2} (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2} = \\
+\argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \frac{1}{2} (\log \beta - \log 2 \pi) {-\frac{\beta}{2} (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2} = \\
+\argmin_{\boldsymbol{\theta}} \sum_{n=1}^N (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2,
+\end{gather*} 
 
-\todo{TODO! Finish this subsection about discriminative probabilistic modelling} \\
+\noindent where the last equation follows from the fact that the first term inside the summation does not depend on the parameter $\boldsymbol{\theta}$, and that scaling the parameter-dependent term by a negative constant is equivalent to dropping the constant and turning the maximization problem into a minimization. With that, we have convinced ourselves that even in the usual discriminative setting, we are in fact making implicit use of a probabilistic approach to machine learning. \\
+
+\subsection{Generative approach}
 
 \noindent So far we have dealt with modelling the conditional distribution of the targets, given the inputs. Sometimes, however, we might be after the marginal distribution of the input data itself. Having such an object in hand, we are able to determine if an observed example has an unusually low probability of occurrence for anomaly detection \cite{vae-anomaly}, fill out missing dimensions of incomplete datapoints \cite{missing-data}, or sample new, realistic datapoints from the learnt density function \cite{vaegan}.  \\
 
-\noindent Unfortunately, capturing the marginal distribution $p(x)$ is somewhat more involved than it was in the conditional case discussed previously. This is because the densities of the complicated distributions that have to be used to accurately model high-dimensional, multi-modal datapoints do not have closed-form derivatives when multiplied together. A canonical model with an intractable likelihood function is the Gaussian mixture model \cite{gaussian-mixture}, which as the name suggests, is comprised of a linear combination of normal distributions. \\ 
+\noindent Capturing the marginal distribution of the inputs is often somewhat more involved than it was in the conditional case discussed previously. This is largely due the fact that high-dimensional, multi-modal datapoints have complex densities whose modelling with well-known distributions would yield suboptimal results. In such situations, additional structure is often incorporated into the probabilistic model in the form of lower-dimensional latent variables. \\
 
-\todo{TODO! Finish subsection illustrating the MoG has intractable derivatives} \\
+\noindent The inclusion of such auxiliary variables is often motivated by the hierarchical nature of physical processes. For example, by thinking about how images could be constructed from a generative point of view, we might imagine that first it is decided which objects to lay onto the scene. Second, one might go into more detail and think about what individual parts do the objects consist of. Finally, the actual orientations of the edges might be decided upon, after which the actual imagine could be drawn out onto the canvas. Moreover, having imposed such hierarchical dependecy structure on our model, we can also traverse the dependency graph bottom-up, reducing our uncertainty about the latents, given an observed datapoint. This inversion of the generative process is called inference, and plays a central role in this thesis. Figure \ref{fig:latent-vars} illustrates the generative and inferential processes just described. \\
 
-\noindent
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth,natwidth=1139,natheight=1208]{latentvar}
+\caption{Illustration of a probabilistic model with latent variables. Green arrows represent the generative process, in which higher-level concepts guide the development of lower-level ones, eventually leading to the generation of each pixel in an image. Red arrows depict inference, in which case the goal it to infer the underlying causes of an obtained input.}
+\label{fig:latent-vars}
+\end{center}
+\end{figure}
+
+\noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observable random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
+
+\noindent Naturally, as we are unable to evaluate the likelihood function, explicit optimization of its monotonic tranform, the log-likelihood, presents difficulties as well. Fortunately, there exists a workaround, which entails optimizing a lower-bound of the log-likelihood instead. By introducing a new distribution $q_{\boldsymbol{\phi}}(\boldsymbol{z} | \boldsymbol{x})$, parameterized by $\boldsymbol{\phi}$, into our framework, we can lower-bound the original likelihood as follows:
+\begin{gather*}
+\log p_{\boldsymbol{\theta}}(\boldsymbol{x}) \stackrel{\text{sum rule}}{=} \\
+\log \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z} \stackrel{\text{multiply by identity}}{=} \\ 
+\log \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) \frac{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \stackrel{\text{Jensen's inequality}}{\geq} \\ 
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \coloneqq \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}). \\
+\end{gather*}
+
+\noindent To see that this lower bound could indeed make the optimization problem easier, it helps to write it in two different forms. The first form illustrates that the lower bound can be written as the expected log-joint under the approximate posterior, plus an additive entropy term that does not depend on the parameters of the generative model:
+
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
+\int q_{\boldsymbol{\phi}} (\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z} - \int q_{\boldsymbol{\phi}} (\boldsymbol{z}|\boldsymbol{x}) \log (\boldsymbol{z}|\boldsymbol{x}) d \boldsymbol{z} = \\
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) \big] + \mathcal{H}(q_{\boldsymbol{\phi}} \big(\boldsymbol{z}|\boldsymbol{x}) \big).
+\end{gathered}
+\label{eq:free-energy-entropy}
+\end{equation} \\
+
+\noindent The second form reveals that the free energy is nothing more than the original log-likelihood that we are lower-bounding, minus an additional penalty term which increases the gap between the bound and the log-likelihood in proportion to the distance between the approximate posterior and the real posterior, as measured by Kullback-Leibler divergence:
+
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x})p_{\boldsymbol{\theta}}(\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}} (\boldsymbol{x}) + \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\
+\log p_{\boldsymbol{\theta}} (\boldsymbol{x}) - \text{KL}\big(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x}) \big).
+\end{gathered}
+\label{eq:free-energy-kl}
+\end{equation} \\
+
+\noindent Having laid out the two forms of the lower bound, one should notice that in equation \ref{eq:free-energy-entropy}, only the first term depends on the generative parameters $\boldsymbol{\theta}$, while in equation \ref{eq:free-energy-kl}, the parameters of the approximate posterior feature only in the divergence term. This observation suggests a coordinate-wise optimization scheme where we take turns optimizing $\boldsymbol{\theta}$ and $\boldsymbol{\phi}$, leading us to the well-known Expectation-Maximization (EM) algorithm \cite{missing-data}. This approach is applicable when we have analytically tractable forms for the expectation of the log-joint, as well as for the true posterior under the current generative parameters $\boldsymbol{\theta}$.
+
+\noindent What makes EM particularly appealing is that each full step of the algorithm either increases the log-likelihood, or the algorithm has converged to the latter's local maximum. From equation \ref{eq:free-energy-kl}, we see that free energy is maximized with respect to $\boldsymbol{\phi}$ when the KL vanishes (as it is always non-negative), which is accomplished when the approximate posterior \footnote{Note that it is important to distinguish between the best-guess parameters that we are working with when carrying out the optimization scheme, and the maximum-likelihood parameters. Our objective is to find the latter, but we are always operating with an estimated set of parameters. When referring to the \textit{true} posterior, we are not implying that we have access to the true, maximum-likelihood parameters, but the "true" form of the posterior, i.e. $p(x|z)$ as opposed to $q(x|z)$.}is set equal to the true posterior. After that, the lower bound is equal to the log-likelihood (under the current best-guess parameters). Since the next step, maximization with respect to $\boldsymbol{\theta}$ can not decrease the free energy, we observe from equation \ref{eq:free-energy-kl} that the log-likelihood can also not decarease, again due to the non-negativity of KL divergences. \\
+
+\noindent Some of the latent variable models that have tractable expected log-joints and posteriors, yielding EM an appropriate tool for learning their parameters, include factor analysis, mixture of Gaussians, hidden markov models, and linear gaussian state-space models. However, often we are interested in using more complicated graphical models, particularly ones where continuous priors and conditionals have non-linear interactions. Assuming that we have the required derivatives of the lower bound in hand, one solutions would be to optimize the bound directly using regular gradient-based methods. Keeping in mind that this approach is usually inferior to EM, as it loses the theoretical guarantees the latter provides, it is often the method of choice for handling models with intractabilities. A concrete example of such an approach is the variational autoencoder, the topic of the next section.
+
+\section{Variational autoencoders}
+
+
+\begin{gather*}
+\int q(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p(\boldsymbol{x} | \boldsymbol{z}) p(\boldsymbol{z})}{q(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \stackrel{\text{distributing the logarithm}}{=}\\ 
+\int q(\boldsymbol{z}|\boldsymbol{x}) \log p(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} + \int q(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p(\boldsymbol{z})}{q(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z}  \stackrel{\text{def of KL}}{=}\\
+\int q(\boldsymbol{z}|\boldsymbol{x}) \log p(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} - KL(q(\boldsymbol{z}|\boldsymbol{x}) || p(\boldsymbol{z})).
+\end{gather*}
 
 % 1. what are variational autoencoders
 % 2. Gumbel softmax trick
