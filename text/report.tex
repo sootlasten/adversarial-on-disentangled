@@ -137,12 +137,16 @@ To fully appreciate variational autoencoders and the problems they are best suit
 \noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observable random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
 
 \noindent Naturally, as we are unable to evaluate the likelihood function, explicit optimization of its monotonic tranform, the log-likelihood, presents difficulties as well. Fortunately, there exists a workaround, which entails optimizing a lower-bound of the log-likelihood instead. By introducing a new distribution $q_{\boldsymbol{\phi}}(\boldsymbol{z} | \boldsymbol{x})$, parameterized by $\boldsymbol{\phi}$, into our framework, we can lower-bound the original likelihood as follows:
-\begin{gather*}
+
+\begin{equation}
+\begin{gathered}
 \log p_{\boldsymbol{\theta}}(\boldsymbol{x}) \stackrel{\text{sum rule}}{=} \\
 \log \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z} \stackrel{\text{multiply by identity}}{=} \\ 
 \log \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) \frac{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \stackrel{\text{Jensen's inequality}}{\geq} \\ 
-\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \coloneqq \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}). \\
-\end{gather*}
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} =: \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}). \\
+\end{gathered}
+\label{eq:free-energy}
+\end{equation} \\
 
 \noindent To see that this lower bound could indeed make the optimization problem easier, it helps to write it in two different forms. The first form illustrates that the lower bound can be written as the expected log-joint under the approximate posterior, plus an additive entropy term that does not depend on the parameters of the generative model:
 
@@ -175,15 +179,38 @@ To fully appreciate variational autoencoders and the problems they are best suit
 
 \section{Variational autoencoders}
 
+As already alluded to in the previous section, the variational autoencoder, introduced by Kingma and Welling \cite{vae}, is a model that optimizes the lower bound of the log-likelihood (equation \ref{eq:free-energy}) using a gradient-based optimization scheme. The form of the lower bound that it is explicitly working with is as follows:
 
-\begin{gather*}
-\int q(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p(\boldsymbol{x} | \boldsymbol{z}) p(\boldsymbol{z})}{q(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} \stackrel{\text{distributing the logarithm}}{=}\\ 
-\int q(\boldsymbol{z}|\boldsymbol{x}) \log p(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} + \int q(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p(\boldsymbol{z})}{q(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z}  \stackrel{\text{def of KL}}{=}\\
-\int q(\boldsymbol{z}|\boldsymbol{x}) \log p(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} - KL(q(\boldsymbol{z}|\boldsymbol{x}) || p(\boldsymbol{z})).
-\end{gather*}
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) p_{\boldsymbol{\theta}}(\boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\ 
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} + \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z}  = \\
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) = \\
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) \simeq \\
+\frac{1}{L} \sum_{l=1}^L \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}^{(l)}) - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})), \quad \text{where } \boldsymbol{z}^{(l)} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}^{(l)} | \boldsymbol{x}),
+\end{gathered}
+\label{eq:vae-lb}
+\end{equation} \\
 
-% 1. what are variational autoencoders
-% 2. Gumbel softmax trick
+\noindent where the first term of the last line is a Monte-Carlo estimate of the expectation above. The KL divergence is left as-is, because as we will soon see, for common distributions, it can be calculated analytically. In general, however, this term can also be estimated by a finite set of samples as well. \\
+
+\noindent An immediate problem that presents itself is that sampling directly from the approximate posterior is not a continuous operation. This presents a problem, as we need the gradient of the Monte-Carlo estimate of the lower bound with respect to $\boldsymbol{\phi}$ for optimization. In principle, the necessary gradients could be estimated using the score function estimator, an ubiquitious method in the reinforcement learning literature \cite{Williams1992}:
+
+\begin{equation}
+\begin{gathered}
+\nabla_{\boldsymbol{\phi}} \mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] = \\
+\int \nabla_{\boldsymbol{\phi}} q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} \stackrel{\text{multiply by identity}}{=} \\
+\int \frac{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \nabla_{\boldsymbol{\phi}} q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} \stackrel{\text{derivative of log}}{=} \\
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \nabla_{\boldsymbol{\phi}} \log q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} = \\
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \nabla_{\boldsymbol{\phi}} \log q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) \big] \simeq \\
+\frac{1}{L} \sum_{l=1}^L \nabla_{\boldsymbol{\phi}} \log q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}), \quad \text{where } \boldsymbol{z}^{(l)} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}^{(l)} | \boldsymbol{x}).
+\end{gathered}
+\end{equation} \\
+
+\noindent Unfortunately, due to its generality, the preceding estimator has a very high variance, rendering it impractical for the purposes of generative modelling.
+
+\todo{Talk about the reparameterization trick}
 
 \section{Disentangled representations}
 

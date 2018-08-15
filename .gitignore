@@ -11,5 +11,4 @@ text/*.log
 text/*.dvi
 text/*.bbl
 text/*.blg
-text/*.pdf
 
