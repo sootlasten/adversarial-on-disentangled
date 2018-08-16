@@ -73,14 +73,14 @@ Summarise your report concisely.
 
 % 1. Adversarial examples
 
-\noindent In recent years, deep neural networks have shown impressive results in various supervised pattern recognition tasks, including image classification \cite{alexnet, resnet}, object detection \cite{rcnn}, and machine translation \cite{nmt}. Capitalizing on the resurgence of deep neural models in the supervised learning domain, unsupervised methods have also gone through a renaissance, as they have moved from modelling relatively simple toy datasets to being able to capture exceedingly complex real-world distributions \cite{began, musicvae}. One of the most prominent generative models behind these successes is the adversarial autoencoder \cite{vae}, which merges conventional probabilistic methods with deep learning, using neural networks to parameterize both the generative and approximate posterior distributions in the the evidence lower bound. \\
+\noindent In recent years, deep neural networks have shown impressive results in various supervised pattern recognition tasks, including image classification \cite{alexnet, resnet}, object detection \cite{rcnn}, and machine translation \cite{nmt}. Capitalizing on the resurgence of deep neural models in the supervised learning domain, unsupervised methods have also gone through a renaissance, as they have moved from modelling relatively simple toy datasets to being able to capture exceedingly complex real-world distributions \cite{began, musicvae}. One of the most prominent generative models behind these successes is the variational autoencoder (VAE) \cite{vae}, which merges conventional probabilistic methods with deep learning, using neural networks to parameterize both the generative and approximate posterior distributions in the the evidence lower bound. \\
 
 \noindent The successes of these models, which mainly consist of stacks of layers, each of which is composed of a linear mapping followed by a nonlinearity, can be attributed to the fact that they can theoretically approximate arbitarily complex functions \cite{Cybenko1989}. However, as the appropriate functions are discovered automatically via a black-box optimization algorithm (e.g. gradient descent or an evolutionary method), the models can have counter-inuitive properties \cite{intriguing-properties}. \\
 
 \noindent First, the resulting decision boundaries of the trained networks are often non-interpretable and unintuitive. Indeed, one of the most well-known and intriguing failure modes of most machine learning algorithms is the existence of adversarial examples - datapoints that are perceptually very close to examples from the original training distribution, but which fool the model with high confidence \cite{intriguing-properties}. The fact that state-of-the-art deep learning models are subject to such adversarial perturbations challenges the narrative that they are unreasonably effective in generalizing outside the distribution they are trained on. More practically, as the models under discussion are being pushed into production for use in semi-autonomous vehicles \cite{nvidia-self-driving-cars}, drones \cite{drones}, surveillance cameras \cite{surveillance-cameras} and malware detection pipelines \cite{malware}, the existence of adversarial examples poses a security threat with possible real-world consequences. \\
 
-\noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse, giving them a reputation of being completely black-box learning machines. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space, while Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of units, as opposed to a single neuron. \\
 
+  \noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse, giving them a reputation of being completely black-box learning machines. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space, while Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of units, as opposed to a single neuron. \\
 \noindent It has been argued \cite{bengio-representation} that such entangled representations are suboptimal for generalization, and incorporating inductive biases which would steer the representations towards \textit{disentanglement} would be beneficial. Indeed, it seems intuitively plausible that generalizing to novel configuration of concepts that was not encountered in the training distribution is easiest when relevant factors of variation in the input data are aligned with individual neurons in the latent space. Validating the intuition, such representations have recently shown promising results in zero-shot transfer learning \cite{darla} and semi-supervised learning \cite{dgpose}. \\
 
 \noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since the leading conjecture explaining the presence of adversarial examples posits that they come about due to excessive linearity of today's pattern recognizers \cite{explaining-and-harnessing}. However, models whose internal representations are disentangled are arguably less linear, since they are implicitly guided to capture the main generative factors of the data, which in datasets with enough complexity are non-linear with respect to inputs in the pixel space. This suggests that disentangled models could be less prone to be fooled by adversarial examples. \\
@@ -107,14 +107,17 @@ To fully appreciate variational autoencoders and the problems they are best suit
 
 \noindent If we further assume that the given targets were drawn independently from this normal distribution, we can estimate the unknown parameters $\boldsymbol{\theta}$ and $\beta$ by maximizing the log-likelihood of the targets:
 
-\begin{gather*}
+\begin{equation}
+\begin{gathered}
 \argmax_{\boldsymbol{\theta}} \log p(\mathbf{t}; \boldsymbol{\theta}) = \\
 \argmax_{\boldsymbol{\theta}} \log \prod_{n=1}^N \mathcal{N}(t^{(n)} | y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}), \beta^{-1}) = \\
 \argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \log \mathcal{N}(t^{(n)} | y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}), \beta^{-1}) = \\
 \argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \log \Big(\frac{\beta}{2 \pi}\Big)^{\frac{1}{2}} e^{-\frac{\beta}{2} (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2} = \\
 \argmax_{\boldsymbol{\theta}} \sum_{n=1}^N \frac{1}{2} (\log \beta - \log 2 \pi) {-\frac{\beta}{2} (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2} = \\
 \argmin_{\boldsymbol{\theta}} \sum_{n=1}^N (t^{(n)} - y(\boldsymbol{x}^{(n)}, \boldsymbol{\theta}))^2,
-\end{gather*} 
+\end{gathered} 
+\label{eq:mse-deriv}
+\end{equation} \\
 
 \noindent where the last equation follows from the fact that the first term inside the summation does not depend on the parameter $\boldsymbol{\theta}$, and that scaling the parameter-dependent term by a negative constant is equivalent to dropping the constant and turning the maximization problem into a minimization. With that, we have convinced ourselves that even in the usual discriminative setting, we are in fact making implicit use of a probabilistic approach to machine learning. \\
 
@@ -134,7 +137,7 @@ To fully appreciate variational autoencoders and the problems they are best suit
 \end{center}
 \end{figure}
 
-\noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observable random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
+\noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observable random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model \footnote{Note that we can focus on the marginal likelihood of individual datapoints, rather than the marginal likelihood of the whole dataset, since under the independence assumption, the former is composed of a sum of the latter (as shown in derivation \ref{eq:mse-deriv}): $\log p_{\boldsymbol{\theta}} (x^{(1)}, x^{(2)}, \dots, x^{(n)}) = \sum_{n=1}^N \log p_{\boldsymbol{\theta}} (\boldsymbol{x}^{(i)})$.}. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
 
 \noindent Naturally, as we are unable to evaluate the likelihood function, explicit optimization of its monotonic tranform, the log-likelihood, presents difficulties as well. Fortunately, there exists a workaround, which entails optimizing a lower-bound of the log-likelihood instead. By introducing a new distribution $q_{\boldsymbol{\phi}}(\boldsymbol{z} | \boldsymbol{x})$, parameterized by $\boldsymbol{\phi}$, into our framework, we can lower-bound the original likelihood as follows:
 
@@ -166,34 +169,37 @@ To fully appreciate variational autoencoders and the problems they are best suit
 \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
 \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x})p_{\boldsymbol{\theta}}(\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\
 \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}} (\boldsymbol{x}) + \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\
-\log p_{\boldsymbol{\theta}} (\boldsymbol{x}) - \text{KL}\big(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x}) \big).
+\log p_{\boldsymbol{\theta}} (\boldsymbol{x}) - \mathcal{D}_\text{KL}\big(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z}|\boldsymbol{x}) \big).
 \end{gathered}
 \label{eq:free-energy-kl}
 \end{equation} \\
 
-\noindent Having laid out the two forms of the lower bound, one should notice that in equation \ref{eq:free-energy-entropy}, only the first term depends on the generative parameters $\boldsymbol{\theta}$, while in equation \ref{eq:free-energy-kl}, the parameters of the approximate posterior feature only in the divergence term. This observation suggests a coordinate-wise optimization scheme where we take turns optimizing $\boldsymbol{\theta}$ and $\boldsymbol{\phi}$, leading us to the well-known Expectation-Maximization (EM) algorithm \cite{missing-data}. This approach is applicable when we have analytically tractable forms for the expectation of the log-joint, as well as for the true posterior under the current generative parameters $\boldsymbol{\theta}$.
+\noindent Having laid out the two forms of the lower bound, one should notice that in equation \ref{eq:free-energy-entropy}, only the first term depends on the generative parameters $\boldsymbol{\theta}$, while in equation \ref{eq:free-energy-kl}, the parameters of the approximate posterior feature only in the divergence term. This observation suggests a coordinate-wise optimization scheme where we take turns optimizing $\boldsymbol{\theta}$ and $\boldsymbol{\phi}$, leading us to the well-known Expectation-Maximization (EM) algorithm \cite{missing-data}. This approach is applicable when we have analytically tractable forms for the expectation of the log-joint, as well as for the true posterior under the current generative parameters $\boldsymbol{\theta}$. \\
 
-\noindent What makes EM particularly appealing is that each full step of the algorithm either increases the log-likelihood, or the algorithm has converged to the latter's local maximum. From equation \ref{eq:free-energy-kl}, we see that free energy is maximized with respect to $\boldsymbol{\phi}$ when the KL vanishes (as it is always non-negative), which is accomplished when the approximate posterior \footnote{Note that it is important to distinguish between the best-guess parameters that we are working with when carrying out the optimization scheme, and the maximum-likelihood parameters. Our objective is to find the latter, but we are always operating with an estimated set of parameters. When referring to the \textit{true} posterior, we are not implying that we have access to the true, maximum-likelihood parameters, but the "true" form of the posterior, i.e. $p(x|z)$ as opposed to $q(x|z)$.}is set equal to the true posterior. After that, the lower bound is equal to the log-likelihood (under the current best-guess parameters). Since the next step, maximization with respect to $\boldsymbol{\theta}$ can not decrease the free energy, we observe from equation \ref{eq:free-energy-kl} that the log-likelihood can also not decarease, again due to the non-negativity of KL divergences. \\
 
-\noindent Some of the latent variable models that have tractable expected log-joints and posteriors, yielding EM an appropriate tool for learning their parameters, include factor analysis, mixture of Gaussians, hidden markov models, and linear gaussian state-space models. However, often we are interested in using more complicated graphical models, particularly ones where continuous priors and conditionals have non-linear interactions. Assuming that we have the required derivatives of the lower bound in hand, one solutions would be to optimize the bound directly using regular gradient-based methods. Keeping in mind that this approach is usually inferior to EM, as it loses the theoretical guarantees the latter provides, it is often the method of choice for handling models with intractabilities. A concrete example of such an approach is the variational autoencoder, the topic of the next section.
+\noindent What makes EM particularly appealing is that each full step of the algorithm either increases the log-likelihood, or the algorithm has converged to the latter's local maximum. From equation \ref{eq:free-energy-kl}, we see that free energy is maximized with respect to $\boldsymbol{\phi}$ when the KL vanishes (as it is always non-negative), which is accomplished when the approximate posterior \footnote{It is important to distinguish between the best-guess parameters that we are working with when carrying out the optimization scheme, and the maximum-likelihood parameters. Our objective is to find the latter, but we are always operating with an estimated set of parameters. When referring to the \textit{true} posterior, we are not implying that we have access to the true, maximum-likelihood parameters, but the "true" form of the posterior, i.e. $p(x|z)$ as opposed to $q(x|z)$.}is set equal to the true posterior. After that, the lower bound is equal to the log-likelihood (under the current best-guess parameters). Since the next step, maximization with respect to $\boldsymbol{\theta}$ can not decrease the free energy, we observe from equation \ref{eq:free-energy-kl} that the log-likelihood can also not decarease, again due to the non-negativity of KL divergences. \\
+
+\noindent Some of the latent variable models that have tractable expected log-joints and posteriors, yielding EM an appropriate tool for learning their parameters, include factor analysis, mixture of Gaussians, hidden markov models, and linear gaussian state-space models. However, often we are interested in using more complicated graphical models, particularly ones where continuous priors and conditionals have non-linear interactions. Assuming that we have the required derivatives of the lower bound in hand, one solutions would be to optimize the bound jointly using regular gradient-based methods. Keeping in mind that this approach is usually inferior to EM, as it loses the theoretical guarantees the latter provides, it is often the method of choice for handling models with intractabilities. A concrete example of such an approach is the variational autoencoder, the topic of the next section.
 
 \section{Variational autoencoders}
 
-As already alluded to in the previous section, the variational autoencoder, introduced by Kingma and Welling \cite{vae}, is a model that optimizes the lower bound of the log-likelihood (equation \ref{eq:free-energy}) using a gradient-based optimization scheme. The form of the lower bound that it is explicitly working with is as follows:
+\subsection{General framework}
+
+As already alluded to in the previous section, the variational autoencoder is a model that optimizes the lower bound of the log-likelihood (equation \ref{eq:free-energy}) using a gradient-based optimization scheme. The form of the lower bound that it is explicitly working with is as follows:
 
 \begin{equation}
 \begin{gathered}
 \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
 \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) p_{\boldsymbol{\theta}}(\boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z} = \\ 
 \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} + \int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log \frac{p_{\boldsymbol{\theta}}(\boldsymbol{z})}{q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} d \boldsymbol{z}  = \\
-\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) = \\
-\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) \simeq \\
-\frac{1}{L} \sum_{l=1}^L \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}^{(l)}) - \text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})), \quad \text{where } \boldsymbol{z}^{(l)} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}^{(l)} | \boldsymbol{x}),
+\int q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) \log p_{\boldsymbol{\theta}}(\boldsymbol{x} | \boldsymbol{z}) d \boldsymbol{z} - \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) = \\
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] - \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) \simeq \\
+\frac{1}{L} \sum_{l=1}^L \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}^{(l)}) - \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})), \quad \text{where } \boldsymbol{z}^{(l)} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}^{(l)} | \boldsymbol{x}),
 \end{gathered}
 \label{eq:vae-lb}
 \end{equation} \\
 
-\noindent where the first term of the last line is a Monte-Carlo estimate of the expectation above. The KL divergence is left as-is, because as we will soon see, for common distributions, it can be calculated analytically. In general, however, this term can also be estimated by a finite set of samples as well. \\
+\noindent where the first term of the last line is a Monte-Carlo estimate of the expectation above. The KL divergence is left as-is, because as we will soon see, for common distributions, it can be calculated analytically. In general, however, this term can be estimated by a finite set of samples as well. \\
 
 \noindent An immediate problem that presents itself is that sampling directly from the approximate posterior is not a continuous operation. This presents a problem, as we need the gradient of the Monte-Carlo estimate of the lower bound with respect to $\boldsymbol{\phi}$ for optimization. In principle, the necessary gradients could be estimated using the score function estimator, an ubiquitious method in the reinforcement learning literature \cite{Williams1992}:
 
@@ -208,9 +214,85 @@ As already alluded to in the previous section, the variational autoencoder, intr
 \end{gathered}
 \end{equation} \\
 
-\noindent Unfortunately, due to its generality, the preceding estimator has a very high variance, rendering it impractical for the purposes of generative modelling.
+\noindent Unfortunately, due to its generality, the preceding estimator has a very high variance, rendering its use impractical in the context of generative modelling. \todo{Elaborate on the variance of the score function gradient estimator!}\\
 
-\todo{Talk about the reparameterization trick}
+\noindent A better approach to estimating the variance, introduced concurrently by Kingma and Welling \cite{vae}, as well as by Rezende et. al. \cite{rezende14}, is to reparameterize the lower bound in equation \ref{eq:vae-lb} such that the necessary stochasticity that is injected into the model would not depend on any of its parameters. As a simple illustrative example of such an approach, suppose our approximate posterior is taken to be a univariate Gaussian: $z \sim p(z|x) = \mathcal{N}(\mu, \sigma^2)$. If we sampled $z$ naively, we would not be able to calculate the required derivatives of this random variable, neither $\frac{\partial z}{\partial \mu}$ nor $\frac{\partial z}{\partial \sigma}$. However, by reparameterizing the variable as $z = \mu + \sigma \epsilon$, where $\epsilon \sim \mathcal{N}(0, 1)$, we decouple the variables of our model from the stochasticity, resulting in differentiability: $\frac{\partial (\mu + \sigma \epsilon)}{\partial \mu} = 1$ and $\frac{\partial (\mu + \sigma \epsilon)}{\partial \sigma} = \epsilon$. \\
+
+\noindent Let us denote the differentiable transformation of the random variable as $\boldsymbol{z} = g_{\boldsymbol{\phi}}(\boldsymbol{\epsilon}, \boldsymbol{x})$, where $\boldsymbol{\epsilon} \sim p(\boldsymbol{\epsilon})$ is the auxiliary noise variable that does not depend on the model's parameters. The lower bound of a mini-batch of $M$ samples, randomly drawn from the full dataset, is then given by equation \ref{eq:vae-lb-reparam}. In practice, Kingma and Wellig \cite{vae} found that the number of samples drawn from the approximate posterior can be taken to be 1 (i.e. $L=1$), provided that the mini-batch is large enough. As the resulting bound is jointly differentiable with respect to $\boldsymbol{\theta}$ and $\boldsymbol{\phi}$, it can be optimized with any of the popular stochastic optimization methods, such as SGD, Adam \cite{adam}, or RMSProp \cite{rmsprop}.
+
+\begin{equation}
+\begin{gathered}
+\frac{1}{M} \sum_{i=1}^M \mathcal{L}(\boldsymbol{x}^{(i)}; \boldsymbol{\theta}, \boldsymbol{\phi}) = \\
+\frac{1}{M} \sum_{i=1}^M \Big\{ \mathbb{E}_{{\boldsymbol{\epsilon}} \sim p({\boldsymbol{\epsilon}})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x}^{(i)} | g_{\boldsymbol{\phi}}(\boldsymbol{\epsilon}, \boldsymbol{x}^{(i)})) \big] - \mathcal{D}_{\text{KL}}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}^{(i)}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) \Big\} \simeq \\
+\frac{1}{ML} \sum_{i=1}^M \Big\{ \sum_{l=1}^L \log p_{\boldsymbol{\theta}} (\boldsymbol{x}^{(i)} | \boldsymbol{z}^{(i, l)}) - \mathcal{D}_{\text{KL}}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}^{(i)}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) \Big\}, \\
+\text{where } \boldsymbol{z}^{(i, l)} \sim g_{\boldsymbol{\phi}}(\boldsymbol{\epsilon}, \boldsymbol{x}), \boldsymbol{\epsilon} \sim p(\boldsymbol{\epsilon}).
+\end{gathered}
+\label{eq:vae-lb-reparam}
+\end{equation} \\
+
+\noindent With that, we have laid out all the fundamental components that make up a variational autoencoder. The next subsection covers some of the specifics that are still left to be filled in, particularly the forms and parameteriztions of the distirbutions in play.
+
+\subsection{Specific example}
+
+The name "variational autoencoder" is usually reserved for a particular realization of the preceding framework, one where both the approximate posterior $q_{\boldsymbol{\phi}}(\boldsymbol{x}|\boldsymbol{z})$, as well as the conditional in the generative part of the model, $p_{\boldsymbol{\theta}}(\boldsymbol{z} | \boldsymbol{x})$, are parameterized by artificial neural networks. These distributions themselves are usually taken to be multivariate normals with diagonal covariances. The prior does not generally have learnable parameters, as it is taken to be an isotropic Gaussian: $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \mathcal{N}(\boldsymbol{z}; \boldsymbol{0}, \boldsymbol{I})$. Figure \ref{fig:vae} gives a schematic of this setup. \\
+
+\noindent A nice property that follows from having Gaussian distributions is the analytic tractability of the KL divergence featuring in the lower bound. \todo{Derive the corresponding closed-form equation.} \\
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth,natwidth=1139,natheight=1208]{vae-cutoff}
+\caption{A schematic illustration of a variational autoencoder.}
+\label{fig:vae}
+\end{center}
+\end{figure}
+
+\noindent Looking at the general outline of the model in figure \ref{fig:vae}, it becomes apparent why it is called an autoencoder. An input $\boldsymbol{x}$ is fed through a neural network, which outputs the mean and diagonal covariance of the approximate posterior. Making use of the reparameterization trick, a sample is then drawn from this distribution. As the the dimension of the latent variable is usually much lower than that of the input, it is akin to the bottleneck layer of a regular autoencoder, and the whole underlying subnetwork (shown in green) is dubbed an encoder. The drawn vector $\boldsymbol{z}$ is subsequently fed through a second neural network, which outputs the estimated parameters of $p_{\boldsymbol{\theta}}(\boldsymbol{x}|\boldsymbol{z})$. As the estimated mean is obtained by upsampling the latent, and the conditional is maximized if it is equal to the original input, it bears resemblence to the decoding part of a conventional autoencoder, justifying the use of the name "decoder" for the underlying neural network.
+
+\subsection{Incorporating discrete variables}
+
+In the previous subsections, we focussed on variational autoencoders with continuous variables, namely ones with Gaussian distributions. Sometimes, however, it would be appropriate for the posterior to include some discrete variables as well. For example, when modelling handwritten digits, some of dimensions of the posterior could correspond to thickness, angle, size, and digit class. While the first three factor of variation are reasonably modelled by continuous distributions, a discrete one is more natural for the last. Unfortunately, the reparameterization trick that allowed joint optimization of the parameters in the Gaussian case is not applicable for discrete variables. \\
+
+\noindent To get around taking direct samples from a discrete distribution, one might employ the Gumbel-Max trick \cite{Luce59}. Suppose our one-hot encoded random variable of interest, $Y$, has a discrete distribution with K choices, parameterized by unnormalized probabilities $(\alpha_1, \alpha_2, \dots, \alpha_K)$, where $\alpha_i \in (0, \infty)$. A sample $y$ can then be drawn from this distribution using the following scheme:
+
+\begin{enumerate}
+  \item Draw K independent samples from a uniform distribution whose supported lies on the open unit interval: $U_i \sim \text{Uniform}(0, 1), \text{ where } i = 1, 2, \dots, K$.
+  \item For each of the drawn samples, evaluate $x_i = \log \alpha_i + G_i, \text{ where } G_i = -\log(-\log U_i)$ is a sample from the Gumbel distribution (hence the name of the trick).
+  \item Set $y_{\argmax_i \{x_i\}}$ to 1, and all other dimensions of $y$ to 0.
+\end{enumerate}
+
+\bigskip
+
+\noindent This looks promising, as the uniform distribution that we sample from does not depend on any of the parameters of the encoder. However, it is still of no use for our purposes, as we have now introduced a non-continuous $\argmax$ operation. A solution, proposed concurrently by Maddison et. al. \cite{concrete}, and Jang et. al. \cite{gumbel-softmax}, is to approximate it by a softmax function with a tunable temperature parameter $\lambda \in (0, \infty)$, as shown in Equation \ref{eq:gumbel-softmax}. Note that in this case, our sample, drawn from what the authors call a Concrete distribution, is no longer discrete, but rather a continous relaxation of it that approximates a one-hot vector as $\lambda \rightarrow 0$. The difference between the original Gumbel-Max trick, and its Concrete relaxation is illustrated in Figure \ref{fig:concrete}.
+
+\begin{equation}
+\begin{gathered}
+y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}((\log \alpha_j + G_j) / \lambda)}
+\end{gathered}
+\label{eq:gumbel-softmax}
+\end{equation}
+
+\bigskip
+
+\noindent Two additional considerations arise when Concrete variables are used in VAEs. First, since no gradients need to be computed at test time, the distributions can be discretized, allowing real categorical variables to be fed through the graph. Second, the KL term in the objective needs to be modified, as simply "plugging" the continous samples into discrete probability mass functions does not result in a valid KL divergence. This is because the samples are not drawn from the same distribution as is in the enumerator under the logarithm, as shown by Equation \ref{eq:concrete-kl}, where the Concrete posterior is denoted as $q_{\boldsymbol{\alpha}, \lambda}^C$, while $q_{\boldsymbol{\alpha}}$ and $p_{\boldsymbol{\alpha}}$ stand for the approximate categorical posterior and prior, respectively.
+
+\begin{equation}
+\begin{gathered}
+\mathbb{E}_{\boldsymbol{y} \sim q^{\text{C}}_{\boldsymbol{\alpha}, \lambda}(\boldsymbol{y} | \boldsymbol{x})} \Big[ \log \frac{q_{\boldsymbol{\alpha}}(\boldsymbol{y} | \boldsymbol{x})}{p_{\boldsymbol{\alpha}} (\boldsymbol{y})} \Big],
+\end{gathered}
+\label{eq:concrete-kl}
+\end{equation}
+
+\bigskip
+
+\noindent The authors of the original paper \cite{concrete} provide several solutions to
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.8\textwidth,natwidth=1050,natheight=358]{concrete}
+\caption{Concrete}
+\label{fig:concrete}
+\end{center}
+\end{figure}
 
 \section{Disentangled representations}
 
