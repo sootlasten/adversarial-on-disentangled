@@ -12,6 +12,7 @@
 \usepackage{makecell}
 \usepackage{xcolor}
 \usepackage{mathtools}
+\usepackage{float}
 
 \newcommand\todo[1]{\textcolor{red}{#1}}
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -79,8 +80,8 @@ Summarise your report concisely.
 
 \noindent First, the resulting decision boundaries of the trained networks are often non-interpretable and unintuitive. Indeed, one of the most well-known and intriguing failure modes of most machine learning algorithms is the existence of adversarial examples - datapoints that are perceptually very close to examples from the original training distribution, but which fool the model with high confidence \cite{intriguing-properties}. The fact that state-of-the-art deep learning models are subject to such adversarial perturbations challenges the narrative that they are unreasonably effective in generalizing outside the distribution they are trained on. More practically, as the models under discussion are being pushed into production for use in semi-autonomous vehicles \cite{nvidia-self-driving-cars}, drones \cite{drones}, surveillance cameras \cite{surveillance-cameras} and malware detection pipelines \cite{malware}, the existence of adversarial examples poses a security threat with possible real-world consequences. \\
 
+\noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse, giving them a reputation of being completely black-box learning machines. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space, while Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of units, as opposed to a single neuron. \\
 
-  \noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse, giving them a reputation of being completely black-box learning machines. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space, while Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of units, as opposed to a single neuron. \\
 \noindent It has been argued \cite{bengio-representation} that such entangled representations are suboptimal for generalization, and incorporating inductive biases which would steer the representations towards \textit{disentanglement} would be beneficial. Indeed, it seems intuitively plausible that generalizing to novel configuration of concepts that was not encountered in the training distribution is easiest when relevant factors of variation in the input data are aligned with individual neurons in the latent space. Validating the intuition, such representations have recently shown promising results in zero-shot transfer learning \cite{darla} and semi-supervised learning \cite{dgpose}. \\
 
 \noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since the leading conjecture explaining the presence of adversarial examples posits that they come about due to excessive linearity of today's pattern recognizers \cite{explaining-and-harnessing}. However, models whose internal representations are disentangled are arguably less linear, since they are implicitly guided to capture the main generative factors of the data, which in datasets with enough complexity are non-linear with respect to inputs in the pixel space. This suggests that disentangled models could be less prone to be fooled by adversarial examples. \\
@@ -257,34 +258,8 @@ In the previous subsections, we focussed on variational autoencoders with contin
 \begin{enumerate}
   \item Draw K independent samples from a uniform distribution whose supported lies on the open unit interval: $U_i \sim \text{Uniform}(0, 1), \text{ where } i = 1, 2, \dots, K$.
   \item For each of the drawn samples, evaluate $x_i = \log \alpha_i + G_i, \text{ where } G_i = -\log(-\log U_i)$ is a sample from the Gumbel distribution (hence the name of the trick).
-  \item Set $y_{\argmax_i \{x_i\}}$ to 1, and all other dimensions of $y$ to 0.
+  \item Set $z_{\argmax_i \{x_i\}}$ to 1, and all other dimensions of $z$ to 0.
 \end{enumerate}
-
-\bigskip
-
-\noindent This looks promising, as the uniform distribution that we sample from does not depend on any of the parameters of the encoder. However, it is still of no use for our purposes, as we have now introduced a non-continuous $\argmax$ operation. A solution, proposed concurrently by Maddison et. al. \cite{concrete}, and Jang et. al. \cite{gumbel-softmax}, is to approximate it by a softmax function with a tunable temperature parameter $\lambda \in (0, \infty)$, as shown in Equation \ref{eq:gumbel-softmax}. Note that in this case, our sample, drawn from what the authors call a Concrete distribution, is no longer discrete, but rather a continous relaxation of it that approximates a one-hot vector as $\lambda \rightarrow 0$. The difference between the original Gumbel-Max trick, and its Concrete relaxation is illustrated in Figure \ref{fig:concrete}.
-
-\begin{equation}
-\begin{gathered}
-y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}((\log \alpha_j + G_j) / \lambda)}
-\end{gathered}
-\label{eq:gumbel-softmax}
-\end{equation}
-
-\bigskip
-
-\noindent Two additional considerations arise when Concrete variables are used in VAEs. First, since no gradients need to be computed at test time, the distributions can be discretized, allowing real categorical variables to be fed through the graph. Second, the KL term in the objective needs to be modified, as simply "plugging" the continous samples into discrete probability mass functions does not result in a valid KL divergence. This is because the samples are not drawn from the same distribution as is in the enumerator under the logarithm, as shown by Equation \ref{eq:concrete-kl}, where the Concrete posterior is denoted as $q_{\boldsymbol{\alpha}, \lambda}^C$, while $q_{\boldsymbol{\alpha}}$ and $p_{\boldsymbol{\alpha}}$ stand for the approximate categorical posterior and prior, respectively.
-
-\begin{equation}
-\begin{gathered}
-\mathbb{E}_{\boldsymbol{y} \sim q^{\text{C}}_{\boldsymbol{\alpha}, \lambda}(\boldsymbol{y} | \boldsymbol{x})} \Big[ \log \frac{q_{\boldsymbol{\alpha}}(\boldsymbol{y} | \boldsymbol{x})}{p_{\boldsymbol{\alpha}} (\boldsymbol{y})} \Big],
-\end{gathered}
-\label{eq:concrete-kl}
-\end{equation}
-
-\bigskip
-
-\noindent The authors of the original paper \cite{concrete} provide several solutions to
 
 \begin{figure}
 \begin{center}
@@ -293,6 +268,43 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \label{fig:concrete}
 \end{center}
 \end{figure}
+
+\bigskip
+
+\noindent This looks promising, as the uniform distribution that we sample from does not depend on any of the parameters of the encoder. However, it is still of no use for our purposes, as we have now introduced a non-continuous $\argmax$ operation. A solution, proposed concurrently by Maddison et. al. \cite{concrete}, and Jang et. al. \cite{gumbel-softmax}, is to approximate it by a softmax function with a tunable temperature parameter $\lambda \in (0, \infty)$, as shown in Equation \ref{eq:gumbel-softmax}. Note that in this case, our sample, drawn from what the authors call a Concrete distribution, is no longer discrete, but rather a continous relaxation of it that approximates a one-hot vector as $\lambda \rightarrow 0$. The difference between the original Gumbel-Max trick, and its Concrete relaxation is illustrated in Figure \ref{fig:concrete}.
+
+\begin{equation}
+\begin{gathered}
+z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}((\log \alpha_j + G_j) / \lambda)}.
+\end{gathered}
+\label{eq:gumbel-softmax}
+\end{equation}
+
+\bigskip
+
+\noindent Two additional considerations arise when Concrete variables are used in VAEs. First, since no gradients need to be computed at test time, the distributions can be discretized, allowing real categorical variables to be fed through the graph. Second, the KL term in the objective needs to be modified, as simply "plugging" the continous samples into discrete probability mass functions does not result in a valid KL divergence. This is because the samples are not drawn from the same distribution as is in the enumerator under the logarithm, as shown by Equation \ref{eq:concrete-kl}, where the Concrete posterior is denoted as $q_{\boldsymbol{\alpha}, \lambda}^C$, while $q_{\boldsymbol{\alpha}}$ and $p_{\boldsymbol{\alpha}}$ stand for the approximate categorical posterior and prior, respectively:
+
+\begin{equation}
+\begin{gathered}
+\mathbb{E}_{\boldsymbol{z} \sim q^{\text{C}}_{\boldsymbol{\alpha}, \lambda}(\boldsymbol{z} | \boldsymbol{x})} \Big[ \log \frac{q_{\boldsymbol{\alpha}}(\boldsymbol{z} | \boldsymbol{x})}{p_{\boldsymbol{\alpha}} (\boldsymbol{z})} \Big].
+\end{gathered}
+\label{eq:concrete-kl}
+\end{equation}
+
+\bigskip
+
+\noindent The authors of the original paper \cite{concrete} provide several options for modifying the KL term, while arguing for replacing the discrete masses in the KL with Concrete densitites. However, unlike the Gaussian case, there is no closed form expression for the KL divergence between two Concrete distributions, so it is necessary to approximate it via sampling. However, for the types of models considered in this thesis, a variety of estimators have been found to exhibit too high of a variance, producing poor results as a consequence (Emilien Dupont, personal communication, August 1, 2018). Thus, we opted for replacing the original penalty with an analytic discrete KL term intead:
+
+\begin{equation}
+\begin{gathered}
+\mathbb{E}_{\boldsymbol{d} \sim q_{\boldsymbol{\alpha}}(\boldsymbol{d} | \boldsymbol{x})} \Big[ \log \frac{q_{\boldsymbol{\alpha}}(\boldsymbol{d} | \boldsymbol{x})}{p_{\boldsymbol{\alpha}} (\boldsymbol{d})} \Big] = \sum_{i=1}^K q_{\boldsymbol{\alpha}}(d_i | \boldsymbol{x}) \log \frac{q_{\boldsymbol{\alpha}}(d_i | \boldsymbol{x})}{p_{\boldsymbol{\alpha}}(d_i)},
+\end{gathered}
+\label{eq:analytic-discrete-kl}
+\end{equation}
+
+\bigskip
+
+\noindent where the vector $\boldsymbol{d}$ represents the one-hot categorical variable. While this strategy provides good results empirically, it is important to emphasize that the use of this KL term in the VAE objective does not necessarily result in a lower-bound of the marginal log-likelihood.
 
 \section{Disentangled representations}
 
