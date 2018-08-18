@@ -334,7 +334,7 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as enjoying better training stability. In particular, the use of GANs as a backbone has proved to be prohibitive for InfoGAN, as they are notorious for their extremely unstable behaviour in training. Adding further complications, vanilla GANs do not optimize an explicit density function, making it hard to measure the training progress quantitatively \cite{gan-tutorial}. While some recent works have addressed these problems with some success \cite{wgan, wgan-gp, began}, Kim et. al. \cite{factor-vae} found that pluggin them into the InfoGAN framework gives inconsistent results. As $\beta$-VAE uses a principled likelihood-based approach in place of a minimax game whose solution lies at a saddle point in a high-dimensional space, its training dynamics are much wiedly. \\
 
-\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. \cite{understanding-beta-vae} build upon it by proposing an enhanced optimization scheme based on some well-developed intuitive arguments. They analyse the $\beta$-VAE objective via the lens of the information bottleneck principle \cite{tishby-ib}. The information-theoretic principle posits that a good internal representation $Z$ of a learning system is one which is maximally informative about the output $Y$, while also compressing the information in the input $X$. Mathematically, this intuition is expressed as maximizing a Lagrangian, where "informativeness" is naturally measured by mutual information, denoted as $I(\cdot; \cdot)$:
+\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. \cite{understanding-beta-vae} build upon it by proposing an enhanced optimization scheme based on some well-developed intuitive arguments. They analyse the $\beta$-VAE objective via the lens of the information bottleneck principle \cite{tishby-ib}. The principle posits that a good internal representation $Z$ of a learning system is one which is maximally informative about the output $Y$, while also compressing the information in the input $X$. Mathematically, this intuition is expressed as maximizing a Lagrangian, where "informativeness" is naturally measured by mutual information, denoted as $I(\cdot; \cdot)$:
 
 \begin{equation}
 \begin{gathered}
@@ -344,18 +344,19 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent 
+\noindent Taking this information-theoretic view of the variational autoencoder, we can conceptualize the probabilistic encoder parameterizing a diagonal Gaussian $q(\boldsymbol{z}|\boldsymbol{x})$ as an independent set of noisy channels $\{z_i\}$, each transmitting information about the input $\boldsymbol{x}$. Accordingly, the KL divergence in Equation \ref{eq:beta-vae} can be thought of as the maximum capacity of said channels per data sample. When the posterior collapses to an isotropic Gaussian prior $p(\boldsymbol{z})$, the KL term vanishes, and no information about the input is let through the latent bottleneck. Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels. \\
 
-Taking a closer look at the penalty term in Equation \ref{eq:beta-vae}, we see that it is 0 when the posterior is exactly equal to the isotropic Gaussian.
+\noindent Burgess et. al. \cite{understanding-beta-vae} argue that trading off the two terms in the $\beta$-VAE objective encourages an encoder to be learned which would have the property that nearby points in data space are close together in the latent space as well. Indeed, suppose that two very different datapoints (as measured by the L2 norm) in pixel-space have similar representations in the latent space. As random noise that is injected into the bottleneck layer, it is likely that the two codes get "mixed up", resulting in the decoder reconstructing the wrong input and incurring a high loss. The situation is illustred in Figure \ref{fig:understanding-bvae}. To avoid such a scenario, we would like the encoding of each datapoint to be as far from others' encodings as possible, which is achieved by squeezing the posterior variances and dispersing their means across datapoints. This, however, is in turn discouraged by the KL penalty term, which advocates the channels to be overlapping for all datapoints. A reasonable compromise between these two opposing forces would be an arrangmenet where the latent space is such that when we make the occasional mistake of decoding the wrong datapoint, we are at least outputting something that is not too far from the original. \\
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.5\textwidth,natwidth=712,natheight=511]{understanding-bvae}
-\caption{bvae}
-\label{fig:bvae}
+\includegraphics[width=0.6\textwidth,natwidth=712,natheight=511]{understanding-bvae}
+\caption{\todo{Caption!!}}
+\label{fig:understanding-bvae}
 \end{center}
 \end{figure}
 
+\noindent Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels.
 
 \section{Adversarial examples}
 
