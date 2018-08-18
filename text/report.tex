@@ -316,7 +316,7 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent \todo{Generative models like attend, infer and repeat} \\
 
-\noindent A particularly interesting approach that requires no supervision is Shmidhuber's predictability minimization \cite{pred-min-schmidhuber}. They introduce additional submodules for each unit in an autoencoder's bottleneck layer which try to predict the unit from the remaining ones. In turn, the model is is concurrently optimized to minimize the predictability of the units. The scheme was motivated by the idea that such a minimax game would give rise to an internal representation where each dimension is statistically independent of the others. While this 'competitive learning' framework was indeed found to be able to learn such factorial codes on toy binary datasets, it has not been shown to produce promising results on more complicated inputs. \\
+\noindent A particularly interesting approach that requires no supervision is Shmidhuber's predictability minimization \cite{pred-min-schmidhuber}. They introduce additional submodules for each unit in an autoencoder's bottleneck layer which try to predict the unit from the remaining ones. In turn, the model is is concurrently optimized to minimize the predictability of the units. The scheme was motivated by the idea that such a minimax game would give rise to an internal representation where each dimension is statistically independent of the others. While this 'competitive learning' framework was indeed found to be able to learn such factorial codes on toy binary datasets, it has not been shown to achieve promising results on more complicated inputs. \\
 
 \noindent The first scalable, purely unsupervised method that showed reasonable level of disentanglement on real-world datasets was InfoGAN, proposed by Chen et. al. \cite{infogan}. They extended the powerful generative adversarial network (GAN) framework \cite{gan} with an additional objective, which would encourage the information between a small subset of the input noise variables and the generated output to be maximized. In practice, this was achieved by adding an additional auxiliary network into the system. The subnetwork, optimized concurrently with the original GAN objective, was fed with the generated images, and tasked to predict the values of a subset of the noise variables that gave rise to it. Contextually, InfoGAN can be seen as a close cousin of both DC-IGN and predictability minimization, borrowing the idea that only a subset of latents should be interpretable from the former, while having an additional subnetwork that predicts the latent activations is akin to the approach of the latter. \\
 
@@ -332,12 +332,30 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as having better training stability. In particular, 
+\noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as enjoying better training stability. In particular, the use of GANs as a backbone has proved to be prohibitive for InfoGAN, as they are notorious for their extremely unstable behaviour in training. Adding further complications, vanilla GANs do not optimize an explicit density function, making it hard to measure the training progress quantitatively \cite{gan-tutorial}. While some recent works have addressed these problems with some success \cite{wgan, wgan-gp, began}, Kim et. al. \cite{factor-vae} found that pluggin them into the InfoGAN framework gives inconsistent results. As $\beta$-VAE uses a principled likelihood-based approach in place of a minimax game whose solution lies at a saddle point in a high-dimensional space, its training dynamics are much wiedly. \\
 
-\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. propose \cite{understanding-beta-vae} an enhanced optimization scheme for $\beta$-VAE based on some well-developed intuitive arguments.
+\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. \cite{understanding-beta-vae} build upon it by proposing an enhanced optimization scheme based on some well-developed intuitive arguments. They analyse the $\beta$-VAE objective via the lens of the information bottleneck principle \cite{tishby-ib}. The information-theoretic principle posits that a good internal representation $Z$ of a learning system is one which is maximally informative about the output $Y$, while also compressing the information in the input $X$. Mathematically, this intuition is expressed as maximizing a Lagrangian, where "informativeness" is naturally measured by mutual information, denoted as $I(\cdot; \cdot)$:
 
-\todo{joint-vae} \\
-\todo{FactorVAE, also mention TCVae}
+\begin{equation}
+\begin{gathered}
+\max \big[ I(Z; Y) - \beta I(X;Z) \big]
+\end{gathered}
+\end{equation}
+
+\bigskip
+
+\noindent 
+
+Taking a closer look at the penalty term in Equation \ref{eq:beta-vae}, we see that it is 0 when the posterior is exactly equal to the isotropic Gaussian.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth,natwidth=712,natheight=511]{understanding-bvae}
+\caption{bvae}
+\label{fig:bvae}
+\end{center}
+\end{figure}
+
 
 \section{Adversarial examples}
 
