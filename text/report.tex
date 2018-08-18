@@ -310,15 +310,31 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \todo{general intro and difference from invariance} \\
 
-\todo{supervised approaches} \\
+\noindent Most earlier work on learning disentangled representations has tackled the problem with weakly supervised methods, which require some a-priori knowledge of the data generating factors \cite{transforming-ae, reed2014, yang2016}. DC-IGN \cite{dcign} is perhaps the most well-known method among such approaches. It adopts a clever curriculum learning \cite{bengio-curriculum} strategy to encode the data generating factors into a small subset latent variables in a VAE, each of which is a-priori assigned a symbolic interpretation. During training, a random latent from this predefined group is chosen per each mini-batch of training data, which in turn is carefully constructed such that all training examples in it would vary in only the chosen factor. Finally, the bottleneck layer of the underlying VAE is regularized to indeed only capture all the variance in the current batch with a single latent. \\
 
-\noindent The first scalable, purely unsupervised method that showed reasonable level of disentanglement on real-world datasets was InfoGAN, proposed by Chen et. al. \cite{infogan}. They extended the powerful generative adversarial network (GAN) framework \cite{gan} with an additional objective, which would encourage the information between a small subset of the input noise variables and the generated output to be maximized. In practice, this was achieved by adding an additional auxiliary network into the system. The subnetwork, optimized concurrently with the original GAN objective, was fed with the generated images, and tasked to predict the values of a subset of the noise variables that gave rise to it. \\
+\noindent \todo{Independently controllable factors} \\
 
-\noindent The work most relevant to this thesis is that of Higgins et. al. \cite{beta-vae}, which demonstrated that simply adding more weight to the KL term in the VAE objective function encourages the posterior to become disentangled. The method superseded InfoGAN, proving to be superior in disentangling, as well as having better stability. In particular, 
+\noindent \todo{Generative models like attend, infer and repeat} \\
+
+\noindent A particularly interesting approach that requires no supervision is Shmidhuber's predictability minimization \cite{pred-min-schmidhuber}. They introduce additional submodules for each unit in an autoencoder's bottleneck layer which try to predict the unit from the remaining ones. In turn, the model is is concurrently optimized to minimize the predictability of the units. The scheme was motivated by the idea that such a minimax game would give rise to an internal representation where each dimension is statistically independent of the others. While this 'competitive learning' framework was indeed found to be able to learn such factorial codes on toy binary datasets, it has not been shown to produce promising results on more complicated inputs. \\
+
+\noindent The first scalable, purely unsupervised method that showed reasonable level of disentanglement on real-world datasets was InfoGAN, proposed by Chen et. al. \cite{infogan}. They extended the powerful generative adversarial network (GAN) framework \cite{gan} with an additional objective, which would encourage the information between a small subset of the input noise variables and the generated output to be maximized. In practice, this was achieved by adding an additional auxiliary network into the system. The subnetwork, optimized concurrently with the original GAN objective, was fed with the generated images, and tasked to predict the values of a subset of the noise variables that gave rise to it. Contextually, InfoGAN can be seen as a close cousin of both DC-IGN and predictability minimization, borrowing the idea that only a subset of latents should be interpretable from the former, while having an additional subnetwork that predicts the latent activations is akin to the approach of the latter. \\
+
+\noindent The work most relevant to this thesis is that of Higgins et. al. \cite{beta-vae}, which demonstrated that simply adding more weight to the KL term in the VAE objective function encourages the posterior to become disentangled. In particular, they multiplied the divergence measure by a constant $\beta > 1$, giving the model its name, $\beta$-VAE:
+
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) =
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] - \beta \, \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})).
+\end{gathered}
+\label{eq:beta-vae}
+\end{equation}
+
+\bigskip
+
+\noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as having better training stability. In particular, 
 
 \noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. propose \cite{understanding-beta-vae} an enhanced optimization scheme for $\beta$-VAE based on some well-developed intuitive arguments.
-
-\todo{understanding beta-vae. This should be quite in depth and make a connection to adversarial examples as well}
 
 \todo{joint-vae} \\
 \todo{FactorVAE, also mention TCVae}
