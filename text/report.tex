@@ -344,9 +344,9 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent Taking this information-theoretic view of the variational autoencoder, we can conceptualize the probabilistic encoder parameterizing a diagonal Gaussian $q(\boldsymbol{z}|\boldsymbol{x})$ as an independent set of noisy channels $\{z_i\}$, each transmitting information about the input $\boldsymbol{x}$. Accordingly, the KL divergence in Equation \ref{eq:beta-vae} can be thought of as the maximum capacity of said channels per data sample. When the posterior collapses to an isotropic Gaussian prior $p(\boldsymbol{z})$, the KL term vanishes, and no information about the input is let through the latent bottleneck. Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels. \\
+\noindent Taking this information-theoretic view of the variational autoencoder, we can conceptualize the probabilistic encoder parameterizing a diagonal Gaussian $q(\boldsymbol{z}|\boldsymbol{x})$ as an independent set of noisy channels $\{z_i\}$, each transmitting information about the input $\boldsymbol{x}$. Accordingly, the KL divergence in Equation \ref{eq:beta-vae} can be thought of as the maximum capacity of said channels per data sample. When the posterior collapses to a unit Gaussian prior $p(\boldsymbol{z})$, the KL term vanishes, and no information about the input is let through the latent bottleneck. Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels. \\
 
-\noindent Burgess et. al. \cite{understanding-beta-vae} argue that trading off the two terms in the $\beta$-VAE objective encourages an encoder to be learned which would have the property that nearby points in data space are close together in the latent space as well. Indeed, suppose that two very different datapoints (as measured by the L2 norm) in pixel-space have similar representations in the latent space. As random noise that is injected into the bottleneck layer, it is likely that the two codes get "mixed up", resulting in the decoder reconstructing the wrong input and incurring a high loss. The situation is illustred in Figure \ref{fig:understanding-bvae}. To avoid such a scenario, we would like the encoding of each datapoint to be as far from others' encodings as possible, which is achieved by squeezing the posterior variances and dispersing their means across datapoints. This, however, is in turn discouraged by the KL penalty term, which advocates the channels to be overlapping for all datapoints. A reasonable compromise between these two opposing forces would be an arrangmenet where the latent space is such that when we make the occasional mistake of decoding the wrong datapoint, we are at least outputting something that is not too far from the original. \\
+\noindent Burgess et. al. \cite{understanding-beta-vae} argue that trading off the two terms in the $\beta$-VAE objective encourages an encoder to be learned which would have the property that nearby points in data space are close together in the latent space as well. Indeed, suppose that two very different datapoints (as measured by the L2 norm) in pixel-space have similar representations in the latent space. As random noise that is injected into the bottleneck layer, it is likely that the two codes get "mixed up", resulting in the decoder reconstructing the wrong input and incurring a high loss. The situation is illustred in Figure \ref{fig:understanding-bvae}. To avoid such a scenario, we would like the encoding of each datapoint to be as far from others' encodings as possible, which is achieved by squeezing the posterior variances and dispersing their means across datapoints. This, however, is in turn discouraged by the KL penalty term, which pressures the channels to be overlapping for all datapoints. A reasonable compromise between these two opposing forces would be an arrangmenet where the latent space is such that when we do make the occasional mistake of decoding the wrong datapoint, we are at least outputting something that is not too far from the original. \\
 
 \begin{figure}
 \begin{center}
@@ -356,13 +356,51 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \end{center}
 \end{figure}
 
-\noindent Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels.
+\noindent A second fundamental observation Burgess et. al. \cite{understanding-beta-vae} make is that when the latent channel capacities are constrained to be very low, the only information that gets through the bottleneck is one whose utilization by the decoder increases the value of the reconstruction term $\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big]$ the most. As an example, suppose we have a dataset of white shapes drawn on a black canvas, each of which is has 5 factors of variation: translation along the vertical and horizontal axes, scale, oritentation, and class (heart, square, or ellipse) \cite{dsprites17}. Now, for a high value of $\beta$, only positional information of the sprite might get through the overly constrained latent bottleneck, as getting the position wrong incurs the most cost in terms of log-likelihood. Subsequently, by gradually increasing the capacities of the latent channels, the model starts to allocate additional latents to new factors of variation, like scale and rotation. Crucially, due to the data locality pressure described before, all the factors of variation are encoded into distinct latents, satisfying our working definition of disentanglement. Figure \ref{fig:dsprites-trav} illustrates this phenomenon. \\
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth,natwidth=849,natheight=525]{dsprites-traversals}
+\caption{\todo{Caption!!}}
+\label{fig:dsprites-trav}
+\end{center}
+\end{figure}
+
+\noindent The intuitive framework laid out above suggests a natural modification to the $\beta$-VAE objective, given by Equation \ref{eq:cc-vae}. In the new formulation, the capacities of the channels, denoted as $C$, are made explicit, and increased gradually in the course of training. The new hyperparameter $\gamma$ specifies the degree of pressure put on the latent channels to be close to their desired capacity. It is usually chosen big enough that the KL term would be relatively close to $C$ at all times, as this makes the external control of the channel capacities rather convenient. \\
+
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) =
+\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big] - \gamma \, | \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) - C |.
+\end{gathered}
+\label{eq:cc-vae}
+\end{equation} 
+
+\bigskip
+
+\noindent While $\beta$-VAE with a controlled capacity increase showed good results disentangling continuous factors of variation, it struggled to capture discrete generative factors. For example, it was unable to completely disentangle the classes of the shapes in the sprites dataset. As a way to overcome this difficuly, Dupont introduced JointVAE \cite{joint-vae}, which augmented the original multivariate normal latent distirbution of $\beta$-VAE with categorical Concrete random variables, leading to the following objective:
+
+\begin{equation}
+\begin{gathered}
+\mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) =
+\mathbb{E}_{\boldsymbol{z, c} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z, c}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z, c}) \big] - \\ \gamma \big\{ | \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) - C_z | + | \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{c}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{c})) - C_c | \big\},
+\end{gathered}
+\end{equation}
+
+\bigskip
+
+\noindent where $\boldsymbol{z}$ and $\boldsymbol{c}$ denote the continous Gaussian and Concrete latent variables, respectively. The new model was shown to be able to outperform the original formulation of $\beta$-VAE on datasets where capturing discrete generative factors is paramount to achieving good reconstruction quality, as is the case for MNIST handwritten digit dataset \cite{mnist}. However, complete disentanglement of the sprites dataset is still beyond the capabilities of current models, as the types of shapes are all quite similar in terms of the area they cover, making the possible increase in log-likelihood marginal.
 
 \section{Adversarial examples}
 
 \chapter{Methods}
 
 \chapter{Results}
+
+\chapter{Discussion}
+
+The intuition laid out above, suggestings that the learned latent representation preserves the locality of points on the input data manifold, seems to provide strong evidence that 
+
 
 \begin{center}
 {\tiny
