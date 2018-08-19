@@ -414,6 +414,16 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \end{center}
 \end{figure}
 
+\bigskip
+
+\noindent In subsequent work, Goodfellow et. al. \cite{explaining-and-harnessing} argue that the existence of adversarial examples can be at least partially explained by their linear nature. Linear models have the property that their outputs change proportionally to the change in the intensity of any of the pixels. Thus, given an input with high enough dimensionality, one can make small perturbtions to a large number of pixels, all of which add up to produce a large shift in the output. Goodfellow et. al. make the observation that this same phenomenon can manifest itself in modern deep neural networks, as they are often explicitly constructed to be rather linear for ease of optimization. Illustrative examples include the rectified linear units as general-purpose activation functions \cite{relu}, LSTMs for time-series analysis \cite{lstm}, and residual networks for compute vision \cite{resnet}. Moreover, adding further evidence in favour of the linearity hypothesis, they observed that RBF networks \cite{rbf-networks} - a method that classify inputs based on their similarity, as measured by the exponentiated quadratic kernels, to a set of predefined centroids - are significantly more robust to adversarial examples. \\
+
+\noindent \todo{fgsm} \\
+
+\noindent \todo{adversarial examples generalize across models, training examples, and domains} \\
+
+\noindent \todo{adversarial examples for generative models}
+
 \chapter{Methods}
 
 \chapter{Results}
