@@ -78,7 +78,7 @@ Summarise your report concisely.
 
 \noindent The successes of these models, which mainly consist of stacks of layers, each of which is composed of a linear mapping followed by a nonlinearity, can be attributed to the fact that they can theoretically approximate arbitarily complex functions \cite{Cybenko1989}. However, as the appropriate functions are discovered automatically via a black-box optimization algorithm (e.g. gradient descent or an evolutionary method), the models can have counter-inuitive properties \cite{intriguing-properties}. \\
 
-\noindent First, the resulting decision boundaries of the trained networks are often non-interpretable and unintuitive. Indeed, one of the most well-known and intriguing failure modes of most machine learning algorithms is the existence of adversarial examples - datapoints that are perceptually very close to examples from the original training distribution, but which fool the model with high confidence \cite{intriguing-properties}. The fact that state-of-the-art deep learning models are subject to such adversarial perturbations challenges the narrative that they are unreasonably effective in generalizing outside the distribution they are trained on. More practically, as the models under discussion are being pushed into production for use in semi-autonomous vehicles \cite{nvidia-self-driving-cars}, drones \cite{drones}, surveillance cameras \cite{surveillance-cameras} and malware detection pipelines \cite{malware}, the existence of adversarial examples poses a security threat with possible real-world consequences. \\
+\noindent First, the resulting decision boundaries of the trained networks are often non-interpretable and unintuitive. Indeed, one of the most well-known and intriguing failure modes of most machine learning algorithms is the existence of adversarial examples - datapoints that are perceptually very close to examples from the original training distribution, but which fool the model with high confidence \cite{intriguing-properties}. The fact that state-of-the-art deep learning models are subject to such adversarial perturbations challenges the narrative that they are unreasonably effective in generalizing outside the distribution they are trained on \cite{bengio-deep-architectures}. More practically, as the models under discussion are being pushed into production for use in semi-autonomous vehicles \cite{nvidia-self-driving-cars}, drones \cite{drones}, surveillance cameras \cite{surveillance-cameras} and malware detection pipelines \cite{malware}, the existence of adversarial examples poses a security threat with possible real-world consequences. \\
 
 \noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse, giving them a reputation of being completely black-box learning machines. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space, while Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of units, as opposed to a single neuron. \\
 
@@ -392,6 +392,27 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \noindent where $\boldsymbol{z}$ and $\boldsymbol{c}$ denote the continous Gaussian and Concrete latent variables, respectively. The new model was shown to be able to outperform the original formulation of $\beta$-VAE on datasets where capturing discrete generative factors is paramount to achieving good reconstruction quality, as is the case for MNIST handwritten digit dataset \cite{mnist}. However, complete disentanglement of the sprites dataset is still beyond the capabilities of current models, as the types of shapes are all quite similar in terms of the area they cover, making the possible increase in log-likelihood marginal.
 
 \section{Adversarial examples}
+
+\noindent The problem of adversarial examples in the context of deep neural networks was first articulated by Szegedy et. al. \cite{intriguing-properties}. They showed that by perturbing the pixels of the input image in a by an imperceptibly small amount, it is possible to cause neural-network based classifiers to assign high likelihoods to arbitrary classes. It is important to stress that the pixels of the original image are not changed randomly, but are rather done so in a principled way. More specifically, the authors use box-constrained L-BFGS \cite{NoceWrig06} to solve the following optimization problem \footnote{Note that this specific formulation constrains the images to have a single channel and either be normalized or grayscale. However, generalizing it to unnormalized RGB images is straightforward.}:
+
+\begin{equation}
+\begin{aligned}
+\text{minimize } &c \Vert \boldsymbol{r} \Vert_2 + \text{loss}_f(\boldsymbol{x}+\boldsymbol{r}, l) \\
+\text{subject to } &\boldsymbol{x} + \boldsymbol{r} \in [0, 1]^m,
+\end{aligned}
+\end{equation}
+
+\bigskip
+
+\noindent where $\boldsymbol{r}$ is the m-dimensional perturbation vector that is added to the original image $\boldsymbol{x}$, such that the classifier $f$ would output the class $l$. $\text{loss}_f$ is some continuous measure of classification loss, commmonly taken to be cross-entropy, while the coefficient $c > 0$ balances the the size of the perturbation and the loss for the generated adversarial image. Of course, the problem is only of interest when $f(\boldsymbol{x}) \neq l$. Figure \ref{fig:intriguing} illustrates some adversarial examples $\boldsymbol{x}$ + $\boldsymbol{r}$ generated by this procedure.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth,natwidth=846,natheight=423]{intriguing}
+\caption{\todo{Caption!!}}
+\label{fig:intriguing}
+\end{center}
+\end{figure}
 
 \chapter{Methods}
 
