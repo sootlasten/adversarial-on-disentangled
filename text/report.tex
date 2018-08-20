@@ -342,6 +342,7 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \begin{gathered}
 \max \big[ I(Z; Y) - \beta I(X;Z) \big]
 \end{gathered}
+\label{eq:ib}
 \end{equation}
 
 \bigskip
@@ -423,13 +424,11 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent One of the most surprising properties of adversarial examples is their generality and transferability. Early work on the problem found that they generalize across different partitions of the same dataset \cite{intriguing-properties} and across models with different architectures \cite{explaining-and-harnessing}. More recently, Kurakin. et. al. \cite{kurakin16} discovered that they can also be extrapolated to the physical world, showing that models trained on the regular ImageNet \cite{imagenet} dataset are misclassifying adversarial examples even if they are printed on paper and viewed through a physical camera. Somewhat reassuringly, they have also been found to fool time-limited humans \cite{humans-adv}. While most research on adversarial examples has focussed on image classification, models trained to solve other kinds of machine learning tasks are subject to them as well, including ones specializing in speech-to-text \cite{audio-adv}, neural machine translation \cite{nmt-adv}, and deep reinforcement learning \cite{rl-adv}. \\
 
-\noindent Pertinent to this thesis is the work by Kos. et. al. \cite{kos-gen-adv}, who investigate adversarial examples in the context of generative models. It was indeed found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}.
+\noindent Pertinent to this thesis is the work by Kos. et. al. \cite{kos-gen-adv}, who investigate adversarial examples in the context of generative models. It was indeed found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}. \\
 
-\noindent Alemi et. al. \cite{alemi}
+\noindent Another closely related work is that of Alemi et. al. \cite{deep-variational-bottleneck}, in which they parameterize the information bottleneck in Equation \ref{eq:ib} using neural networks. By subsequently deriving a variational lower bound to this objective and making use of the reparatemerization trick, they end up with a model anologus to that of $\beta$-VAE, given that the output variable $Y$ in Equation \ref{eq:ib} is taken to be the reconstruction of the input. However, as their treatment is more broad, they are also able to generalize this approach to a classification setting, by taking $Z$ to be the class label. Intuitively, this amounts to swapping the decoder of $\beta$-VAE with an appropriate classifier. To demonstrate the usefulness of the bottleneck principle, they measured the robustness of the resulting classifier to adversarial examples on the MNIST and ImageNet datasets. They found that the model becomes progressively harder to fool as the capacity of the bottleneck is increased.
 
 \chapter{Methods}
-
-  
 
 \chapter{Results}
 
