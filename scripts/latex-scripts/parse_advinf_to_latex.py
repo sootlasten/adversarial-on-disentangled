@@ -11,7 +11,7 @@ def find_nth_character(str1, substr, n):
     return pos
 
 
-filename = "/home/stensootla/projects/adversarial-on-disentangled/entangled-weightdecay.txt"
+filename = "/home/stensootla/projects/adversarial-on-disentangled/ent-wdec-adv-inf.txt"
 sources = []
 with open(filename, 'r') as f:
   for line in f.readlines():

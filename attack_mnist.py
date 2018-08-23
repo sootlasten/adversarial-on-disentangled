@@ -4,12 +4,15 @@ from collections import defaultdict
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+import numpy as np
 import torch
 import torch.optim as optim
 from torch.distributions import Normal
+from torchvision.utils import save_image
 
 from models import VAE, MnistClassifier
-from loaders.mnist_single_class import get_mnist_loader
+from loaders.mnist_single_class import get_mnist_singlecls_loader
+from loaders.mnist import MNISTUtil
 
 
 def l2_norm(x):
@@ -38,8 +41,8 @@ class Attacker():
         if src_class == tar_class: continue
         pair = src_class, tar_class
       
-        src_loader = get_mnist_loader(src_class, self.args.batch_size)
-        tar_loader = get_mnist_loader(tar_class, self.args.batch_size)
+        src_loader = get_mnist_singlecls_loader(src_class, self.args.batch_size)
+        tar_loader = get_mnist_singlecls_loader(tar_class, self.args.batch_size)
 
         nb_total = 0
         batches = min(len(tar_loader), len(src_loader))
@@ -72,9 +75,9 @@ class Attacker():
         with open(self.args.info_path, 'a') as f:
           f.write(pair_info + '\n')
 
-  def vis(self, src_class, tar_class):
-    src_loader = get_mnist_loader(src_class, 1)
-    tar_loader = get_mnist_loader(tar_class, 1)
+  def vis_pair(self, src_class, tar_class):
+    src_loader = get_mnist_singlecls_loader(src_class, 1)
+    tar_loader = get_mnist_singlecls_loader(tar_class, 1)
     
     for src, tar in zip(src_loader, tar_loader):
       src = src.to(self.device)
@@ -94,7 +97,28 @@ class Attacker():
       adv_recon = self.vae(adv)[0].squeeze().data
       axarr[1, 2].imshow(adv_recon, cmap='gray')
       plt.show()
+  
+  def vis_bulk(self, n):
+    testdata = MNISTUtil().testdata
+    srcs, advs, adv_recons = [], [], []
+    for i in tqdm(range(n)):
+      src = testdata[i].unsqueeze(0).to(self.device)
+      tar = testdata[9418].unsqueeze(0).to(self.device)
+      
+      adv = self._latent_attack(src, tar)
+      adv_recon = self.vae(adv)[0]
+    
+      srcs.append(src.squeeze())
+      advs.append(adv.squeeze())
+      adv_recons.append(adv_recon.squeeze())
+      
+    srcs = torch.stack(srcs).unsqueeze(1)
+    advs = torch.stack(advs).unsqueeze(1)
+    adv_recons = torch.stack(adv_recons).unsqueeze(1)
 
+    save_image(srcs, "srcs.png", nrow=int(np.sqrt(n)), pad_value=1)
+    save_image(advs, "advs.png", nrow=int(np.sqrt(n)), pad_value=1)
+    save_image(adv_recons, "adv_recons.png", nrow=int(np.sqrt(n)), pad_value=1)
 
   def _latent_attack(self, src, tar):
     tar_recon, _, tar_z_params = self.vae(tar)
@@ -120,7 +144,6 @@ class Attacker():
       optimizer.step()
 
       adv.data = torch.min(torch.max(adv.data, _min), _max)
-      #adv.data = torch.clamp(adv.data, 0, 1)
         
     return adv
     
@@ -131,7 +154,7 @@ def parse():
   parser.add_argument('--cls-ckpt', type=str, default=None, dest='cls_ckpt_path')
   parser.add_argument('--eta', type=float, default=1e-3)
   parser.add_argument('--batch-size', type=int, default=64)
-  parser.add_argument('--lambda', type=float, default=20, dest='_lambda',
+  parser.add_argument('--lambda', type=float, default=1, dest='_lambda',
                       help='coefficient for the pixel-wise norm')
   parser.add_argument('--eps', type=float, default=0.1,
                       help='the maximum amount any pixel in the adversarial \
@@ -147,6 +170,10 @@ def parse():
   parser.add_argument('--vis-pair', type=str, default='',
                       help='a pair of digit classes to visualize the adversarial \
                             examples of')
+  parser.add_argument('--vis-bulk', type=int, default=0,
+                      help='visualize the adversarial examples (target class: 1) \
+                            for the first n MNIST images, and their \
+                            reconstructions)')
   return parser.parse_args()
 
 
@@ -169,7 +196,10 @@ def run(args):
       src, tar = map(lambda x: int(x), args.vis_pair.split(','))
     except: 
       raise ValueError("Argument 'vis-pair' needs to be a pair of digits")
-    attacker.vis(src, tar)
+    attacker.vis_pair(src, tar)
+  elif args.vis_bulk:
+    assert args.vis_bulk > 0 and np.sqrt(args.vis_bulk).is_integer()
+    attacker.vis_bulk(args.vis_bulk)
   else:
     if not args.cls_ckpt_path:
       raise ValueError("Must specify classifier path when evaluating \

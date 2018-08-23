@@ -17,15 +17,15 @@ def temp_eval(func):
 
 
 class Visualizer():
-  def __init__(self, model, device, dataset, nb_trav):
+  def __init__(self, model, device, dataset, nb_trav, indices=None):
     self.model = model
     self.device = device
     self.dataset = dataset
-    self.trav_imgs = self._get_trav_imgs(nb_trav)
+    self.trav_imgs = self._get_trav_imgs(nb_trav, indices)
 
-  def _get_trav_imgs(self, nb_trav, first_idx=None):
-    indices = random.sample(range(1, len(self.dataset)), nb_trav)
-    if first_idx is not None: indices[0] = first_idx
+  def _get_trav_imgs(self, nb_trav, indices):
+    if not indices:
+      indices = random.sample(range(1, len(self.dataset)), nb_trav)
     imgs = []
     for i, img_idx in enumerate(indices):
       img = self.dataset[img_idx]

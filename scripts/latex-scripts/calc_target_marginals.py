@@ -16,11 +16,11 @@ def find_nth_character(str1, substr, n):
 AS_targets_dict = defaultdict(list)
 AS_ignore_targets_dict = defaultdict(list)
 
-filename = "/home/stensootla/projects/adversarial-on-disentangled/entangled-weightdecay.txt"
+filename = "/home/stensootla/projects/adversarial-on-disentangled/ent-wdec-adv-inf.txt"
 with open(filename, 'r') as f:
   for line in f.readlines():
     line = line.strip()
-    cur_source = int(line[0])
+    cur_target = int(line[2])
     
     c_target, c_ignore_target = re.findall(r'\(\d+/\d+\)', line)
 
@@ -30,19 +30,24 @@ with open(filename, 'r') as f:
     vals = list(map(lambda x: int(x), c_ignore_target[1:-1].split('/')))
     AS_ignore_target = round(vals[0] / vals[1] * 100, 2)
     
-    AS_targets_dict[cur_source].append(AS_target)
-    AS_ignore_targets_dict[cur_source].append(AS_ignore_target)
+    AS_targets_dict[cur_target].append(AS_target)
+    AS_ignore_targets_dict[cur_target].append(AS_ignore_target)
     
 print("AS_ignore_target")
-s = ""
-for digit_class, AS_ignore_target_list in AS_ignore_targets_dict.items():
-  s += " & {:.2f}\%".format(round(np.mean(AS_ignore_target_list), 2))
-print(s)
+row = ""
+full_AS_ignore_target = []
+full_AS_target = []
+for digit_class in range(10):
+  AS_ignore_target_marg = round(np.mean(AS_ignore_targets_dict[digit_class]), 2)
+  AS_target_marg = round(np.mean(AS_targets_dict[digit_class]), 2)
 
-print("\nAS_target")
-s = ""
-for digit_class, AS_target_list in AS_targets_dict.items():
-  s += " & {:.2f}\%".format(round(np.mean(AS_target_list), 2))
-print(s)
+  full_AS_ignore_target.extend(AS_ignore_targets_dict[digit_class])
+  full_AS_target.extend(AS_targets_dict[digit_class])
 
+  row += " & \makecell{{{:.2f}\% \\\\ ({:.2f}\%)}}".format(
+    AS_ignore_target_marg, AS_target_marg)
   
+print(round(np.mean(full_AS_ignore_target), 2), 
+  round(np.mean(full_AS_target), 2))
+#print(row)
+

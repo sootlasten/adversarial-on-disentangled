@@ -126,7 +126,7 @@ class MnistSingleDigit(Dataset):
     print('Done!')
 
 
-def get_mnist_loader(digit, batch_size, train=False):
+def get_mnist_singlecls_loader(digit, batch_size, train=False):
   all_transforms = transforms.Compose([
       transforms.Resize(32),
       transforms.ToTensor()

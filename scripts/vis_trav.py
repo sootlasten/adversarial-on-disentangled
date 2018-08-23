@@ -34,6 +34,11 @@ def parse():
   parser.add_argument('--nb-trav', type=int, default=10,
                       help='number of samples to visualize on the \
                             traversal canvas.')
+  parser.add_argument('--indices', type=str, default=None,
+                      help="A comma separated list of indices of \
+                            the datapoints to visualize. If given, \
+                            the number of inidces must be equal to \
+                            the value of the 'nb-trav' argument")
   parser.add_argument('--dataset', type=str, required=True,
                       help='The dataset to use for training \
                            (celeba | mnist | dsprites | blobs)')
@@ -57,7 +62,16 @@ def main(args):
   vae.eval()
 
   _, datautil = _get_dataset(args.dataset)
-  vis = Visualizer(vae, device, datautil.testdata, args.nb_trav)
+
+  if not args.indices: 
+    indices = None
+  else:
+    indices = [int(e) for e in args.indices.split(',')]
+    assert len(indices) == args.nb_trav
+
+  vis = Visualizer(vae, device, 
+    datautil.testdata, args.nb_trav, indices)
+    
   vis.traverse(args.save_path)
 
 
