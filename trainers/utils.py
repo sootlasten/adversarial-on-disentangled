@@ -48,14 +48,7 @@ class BaseTrainer(ABC):
     self.vis = vis
     self.logger = logger
     self.device = device
-    self.cur_cap = self.args.cap_min
   
-  def get_cap_loss(self, kl, step):
-    cap = (self.args.cap_max - self.args.cap_min)* \
-      step/self.args.cap_iters
-    self.cur_cap = min(cap, self.args.cap_max)
-    return self.args.cap_coeff*torch.abs(self.cur_cap - kl)
-
   @abstractmethod
   def put_in_work():
     pass

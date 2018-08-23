@@ -9,6 +9,17 @@ from .utils import *
 
 
 class Trainer(BaseTrainer):
+  def __init__(self, args, nets, opt, dataloader, vis, logger, device):
+    super(Trainer, self).__init__(args, nets, opt, \
+      dataloader, vis, logger, device)
+    self.cur_cap = self.args.cap_min
+  
+  def get_cap_loss(self, kl, step):
+    cap = (self.args.cap_max - self.args.cap_min)* \
+      step/self.args.cap_iters
+    self.cur_cap = min(cap, self.args.cap_max)
+    return self.args.cap_coeff*torch.abs(self.cur_cap - kl)
+
   @overrides(BaseTrainer)
   def put_in_work(self):
     """Puts in work like a man possessed."""
