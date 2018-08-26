@@ -20,8 +20,7 @@ def kl_cat_unag(logits):
 
 
 def bce_loss(source, target):
-  return F.binary_cross_entropy(source, 
-    target, reduction='none').mean(0).sum()
+  return F.binary_cross_entropy(source, target, reduce=False).mean(0).sum()
 
 
 def sse_loss(source, target):
