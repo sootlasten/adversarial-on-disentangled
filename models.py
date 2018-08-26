@@ -6,6 +6,36 @@ from torch.distributions.categorical import Categorical
 from utils.model_utils import *
 
 
+def _encoder_fancy(img_dims, nb_out, nonl, out_nonl):
+  enc_layers = []
+  enc_layers.extend(conv_block(img_dims[0], 128, nonl, norm=True))
+  enc_layers.extend(conv_block(128, 256, nonl, norm=True))
+  enc_layers.extend(conv_block(256, 512, nonl, norm=True))
+  enc_layers.extend(conv_block(512, 1024, nonl, norm=True))
+  enc_layers.append(Flatten())
+  enc_layers.extend(linear_block(1024*4*4, nb_out, out_nonl))
+  return nn.Sequential(*enc_layers)
+
+
+def _decoder_fancy(img_dims, nb_latents, nonl, out_nonl):
+  def fancy_deconv_block(in_c, out_c, nonl, norm=True):
+    layers = [nn.UpsamplingNearest2d(scale_factor=2)] 
+    layers.append(nn.ReplicationPad2d(1))
+    layers.append(nn.Conv2d(in_c, out_c, 3, 1))
+    if norm: layers.append(nn.BatchNorm2d(out_c, 1e-3))
+    layers.append(nonl)
+    return layers
+
+  dec_layers = []
+  dec_layers.extend(linear_block(nb_latents, 1024*4*4, nonl))
+  dec_layers.append(Reshape(-1, 1024, 4, 4))
+  dec_layers.extend(fancy_deconv_block(1024, 512, nonl))
+  dec_layers.extend(fancy_deconv_block(512, 256, nonl))
+  dec_layers.extend(fancy_deconv_block(256, 128, nonl))
+  dec_layers.extend(fancy_deconv_block(128, img_dims[0], out_nonl, norm=False))
+  return nn.Sequential(*dec_layers)
+  
+
 def _encoder(img_dims, nb_out, nonl, out_nonl):
   enc_layers = []
   enc_layers.extend(conv_block(img_dims[0], 32, nonl))
@@ -42,10 +72,14 @@ class VAE(nn.Module):
     self.chunk_sizes = self.cont_dim + self.cat_dims
     self.temp = temp
 
-    self.encoder = _encoder(img_dims, sum(self.chunk_sizes), 
-      nonl=nn.ReLU(), out_nonl=None)
-    self.decoder = _decoder(img_dims, sum(self.chunk_sizes)-cont_dim,   
-      nonl=nn.ReLU(), out_nonl=nn.Sigmoid())
+    # self.encoder = _encoder(img_dims, sum(self.chunk_sizes), 
+    #   nonl=nn.ReLU(), out_nonl=None)
+    # self.decoder = _decoder(img_dims, sum(self.chunk_sizes)-cont_dim,   
+    #   nonl=nn.ReLU(), out_nonl=nn.Sigmoid())
+    self.encoder = _encoder_fancy(img_dims, sum(self.chunk_sizes), 
+      nonl=nn.LeakyReLU(), out_nonl=None)
+    self.decoder = _decoder_fancy(img_dims, sum(self.chunk_sizes)-cont_dim,   
+      nonl=nn.LeakyReLU(), out_nonl=nn.Sigmoid())
   
   @property
   def device(self):
