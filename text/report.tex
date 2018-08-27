@@ -537,12 +537,16 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \begin{center}
 {\tiny
-  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \begin{tabular}{c|c|c|c|c|c|}
   \hline
-  \textbf{Source} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
-  \textbf{Disentangled} & \cellcolor{light-gray} \makecell{8.89\% \\ (3.18\%)} & \cellcolor{light-gray} \makecell{82.62\% \\ (33.76\%)} & \cellcolor{light-gray} \makecell{20.92\% \\ (5.36\%)} & \cellcolor{light-gray} \makecell{16.72\% \\ (6.20\%)} & \makecell{33.73\% \\ (13.02\%)} & \cellcolor{light-gray} \makecell{44.25\% \\ (11.24\%)} & \cellcolor{light-gray} \makecell{38.49\% \\ (13.48\%)} & \cellcolor{light-gray} \makecell{40.57\% \\ (11.65\%)} & \makecell{18.23\% \\ (8.47\%)} & \cellcolor{light-gray} \makecell{64.23\% \\ (18.97\%)} \\ \hline
-  \textbf{Entangled} & \makecell{6.12\% \\ (1.93\%)} & \makecell{63.75\% \\ (28.58\%)} & \makecell{11.12\% \\ (3.06\%)} & \makecell{12.11\% \\ (4.30\%)} & \cellcolor{light-gray} \makecell{64.40\% \\ (13.46\%)} & \makecell{37.79\% \\ (11.04\%)} & \makecell{27.83\% \\ (9.55\%)} & \makecell{39.70\% \\ (7.89\%)} & \makecell{16.27\% \\ (6.43\%)} & \makecell{19.19\% \\ (8.70\%)} \\ \hline
-  \textbf{Entangled wdec} & \makecell{3.30\% \\ (0.97\%)} & \makecell{59.78\% \\ (23.44\%)} & \makecell{7.09\% \\ (1.41\%)} & \makecell{10.83\% \\ (3.02\%)} & \makecell{53.99\% \\ (10.94\%)} & \makecell{34.74\% \\ (8.65\%)} & \makecell{24.94\% \\ (6.10\%)} & \makecell{18.45\% \\ (4.26\%)} & \cellcolor{light-gray} \makecell{23.46\% \\ (7.61\%)} & \makecell{32.28\% \\ (12.09\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Source}} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4}\\ \hline
+  \multicolumn{1}{|c|}{\textbf{Disentangled}} & \cellcolor{light-gray} \makecell{8.89\% \\ (3.18\%)} & \cellcolor{light-gray} \makecell{82.62\% \\ (33.76\%)} & \cellcolor{light-gray} \makecell{20.92\% \\ (5.36\%)} & \cellcolor{light-gray} \makecell{16.72\% \\ (6.20\%)} & \makecell{33.73\% \\ (13.02\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Entangled}} & \makecell{6.12\% \\ (1.93\%)} & \makecell{63.75\% \\ (28.58\%)} & \makecell{11.12\% \\ (3.06\%)} & \makecell{12.11\% \\ (4.30\%)} & \cellcolor{light-gray} \makecell{64.40\% \\ (13.46\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Entangled wdec}} & \makecell{3.30\% \\ (0.97\%)} & \makecell{59.78\% \\ (23.44\%)} & \makecell{7.09\% \\ (1.41\%)} & \makecell{10.83\% \\ (3.02\%)} & \makecell{53.99\% \\ (10.94\%)} \\ \hline
+  & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} \\ \cline{2-6}
+  & \cellcolor{light-gray} \makecell{44.25\% \\ (11.24\%)} & \cellcolor{light-gray} \makecell{38.49\% \\ (13.48\%)} & \cellcolor{light-gray} \makecell{40.57\% \\ (11.65\%)} & \makecell{18.23\% \\ (8.47\%)} & \cellcolor{light-gray} \makecell{64.23\% \\ (18.97\%)} \\ \cline{2-6}
+  & \makecell{37.79\% \\ (11.04\%)} & \makecell{27.83\% \\ (9.55\%)} & \makecell{39.70\% \\ (7.89\%)} & \makecell{16.27\% \\ (6.43\%)} & \makecell{19.19\% \\ (8.70\%)} \\ \cline{2-6}
+  & \makecell{34.74\% \\ (8.65\%)} & \makecell{24.94\% \\ (6.10\%)} & \makecell{18.45\% \\ (4.26\%)} & \cellcolor{light-gray} \makecell{23.46\% \\ (7.61\%)} & \makecell{32.28\% \\ (12.09\%)} \\ \cline{2-6}
   \end{tabular}
 }
 \captionof{table}{Source marginals}
@@ -550,37 +554,24 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \begin{center}
 {\tiny
-  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+  \begin{tabular}{c|c|c|c|c|c|}
   \hline
-  \textbf{Source} & \textbf{Disentangled} & \textbf{Entangled} & \textbf{\makecell{Enangled \\ weight decay}} \\ \hline 
-  0 & \cellcolor{light-gray} \colorbox{light-gray}{\makecell{8.89\% \\ (3.18\%)}} & \makecell{6.12\% \\ (1.93\%)} & \makecell{3.30\% \\ (0.97\%)} \\ \hline
-  1 & \cellcolor{light-gray} \colorbox{light-gray}{\makecell{82.62\% \\ (33.76\%)}} & \makecell{63.75\% \\ (28.58\%)} & \makecell{59.78\% \\ (23.44\%)} \\ \hline
-  2 & \cellcolor{light-gray} \colorbox{light-gray}{\makecell{20.92\% \\ (5.36\%)}} & \makecell{11.12\% \\ (3.06\%)} & \makecell{7.09\% \\ (1.41\%)} \\ \hline
-  3 & \cellcolor{light-gray} \colorbox{light-gray}{\makecell{16.72\% \\ (6.20\%)}} & \makecell{12.11\% \\ (4.30\%)} & \makecell{10.83\% \\ (3.02\%)} \\ \hline 
-  4 & \makecell{33.73\% \\ (13.02\%)} & \makecell{64.40\% \\ (13.46\%)} & \\ \hline 
-  5 & & & \\ \hline 
-  6 & & & \\ \hline
-  7 & & & \\ \hline
-  8 & & & \\ \hline
-  9 & & & \\ \hline
-  \end{tabular}
-}
-\captionof{table}{Source marginals}
-\end{center}
-
-
-\begin{center}
-{\tiny
-  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
-  \hline
-  \textbf{Target} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
-  \textbf{Disentangled} & \cellcolor{light-gray} \makecell{40.36\% \\ (1.78\%)} &  \cellcolor{light-gray} \makecell{25.91\% \\ (0.93\%)} &  \cellcolor{light-gray} \makecell{46.50\% \\ (25.91\%)} & \cellcolor{light-gray} \makecell{41.81\% \\ (10.19\%)} & \cellcolor{light-gray} \makecell{31.76\% \\ (14.23\%)} & \cellcolor{light-gray} \makecell{38.98\% \\ (10.04\%)} & \cellcolor{light-gray} \makecell{37.46\% \\ (7.80\%)} & \makecell{27.77\% \\ (7.42\%)} & \cellcolor{light-gray} \makecell{46.23\% \\ (32.19\%)} & \cellcolor{light-gray} \makecell{31.87\% \\ (14.87\%)} \\ \hline
-  \textbf{Entangled} & \makecell{29.39\% \\ (3.52\%)} & \makecell{13.88\% \\ (0.24\%)} & \makecell{35.42\% \\ (11.50\%)} & \makecell{40.39\% \\ (18.68\%)} & \makecell{24.71\% \\ (5.53\%)} & \makecell{32.75\% \\ (7.38\%)} & \makecell{22.94\% \\ (4.23\%)} & \cellcolor{light-gray} \makecell{28.20\% \\ (4.54\%)} & \makecell{43.49\% \\ (25.44\%)} & \makecell{27.11\% \\ (13.87\%)} \\ \hline
-  \textbf{Entangled wdec} & \makecell{28.36\% \\ (4.50\%)} & \makecell{12.62\% \\ (1.06\%)} & \makecell{37.50\% \\ (16.60\%)} & \makecell{36.40\% \\ (12.30\%)} & \makecell{19.14\% \\ (1.88\%)} & \makecell{27.39\% \\ (4.44\%)} & \makecell{20.63\% \\ (3.89\%)} & \makecell{29.92\% \\ (12.57\%)} & \makecell{33.21\% \\ (12.55\%)} & \makecell{23.67\% \\ (8.72\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Target}} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Disentangled}} & \cellcolor{light-gray} \makecell{40.36\% \\ (1.78\%)} &  \cellcolor{light-gray} \makecell{25.91\% \\ (0.93\%)} &  \cellcolor{light-gray} \makecell{46.50\% \\ (25.91\%)} & \cellcolor{light-gray} \makecell{41.81\% \\ (10.19\%)} & \cellcolor{light-gray} \makecell{31.76\% \\ (14.23\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Entangled}} & \makecell{29.39\% \\ (3.52\%)} & \makecell{13.88\% \\ (0.24\%)} & \makecell{35.42\% \\ (11.50\%)} & \makecell{40.39\% \\ (18.68\%)} & \makecell{24.71\% \\ (5.53\%)} \\ \hline
+  \multicolumn{1}{|c|}{\textbf{Entangled wdec}} & \makecell{28.36\% \\ (4.50\%)} & \makecell{12.62\% \\ (1.06\%)} & \makecell{37.50\% \\ (16.60\%)} & \makecell{36.40\% \\ (12.30\%)} & \makecell{19.14\% \\ (1.88\%)} \\ \hline
+  & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} \\ \cline{2-6}
+  & \cellcolor{light-gray} \makecell{38.98\% \\ (10.04\%)} & \cellcolor{light-gray} \makecell{37.46\% \\ (7.80\%)} & \makecell{27.77\% \\ (7.42\%)} & \cellcolor{light-gray} \makecell{46.23\% \\ (32.19\%)} & \cellcolor{light-gray} \makecell{31.87\% \\ (14.87\%)} \\ \cline{2-6}
+  & \makecell{32.75\% \\ (7.38\%)} & \makecell{22.94\% \\ (4.23\%)} & \cellcolor{light-gray} \makecell{28.20\% \\ (4.54\%)} & \makecell{43.49\% \\ (25.44\%)} & \makecell{27.11\% \\ (13.87\%)} \\ \cline{2-6}
+  & \makecell{27.39\% \\ (4.44\%)} & \makecell{20.63\% \\ (3.89\%)} & \makecell{29.92\% \\ (12.57\%)} & \makecell{33.21\% \\ (12.55\%)} & \makecell{23.67\% \\ (8.72\%)} \\ \cline{2-6}
   \end{tabular}
 }
 \captionof{table}{Target marginals}
 \end{center}
+
+\chapter{Conclusion}
+
+\chapter{Appendix}
 
 \begin{table}
 \noindent\makebox[\textwidth]{
@@ -588,7 +579,7 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
   \cline{1-11}
   \multirow{2}{*}{\textbf{Source}}
-  & \multicolumn{10}{ c| }{\textbf{Targets}}  \\ \cline {2-11}
+  & \multicolumn{10}{|c|}{\textbf{Targets}}  \\ \cline {2-11}
   & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9}  \\ \hline
   \textbf{0} & - & \makecell{6.58\% \\ (0.00\%)} & \makecell{11.12\% \\ (5.98\%)} & \makecell{8.36\% \\ (3.34\%)} & \makecell{9.21\% \\ (1.99\%)} & \makecell{11.15\% \\ (6.44\%)} & \makecell{8.13\% \\ (4.71\%)} & \makecell{7.60\% \\ (0.31\%)} & \makecell{8.74\% \\ (5.89\%)} & \makecell{9.10\% \\ (0.00\%)} \\ \hline
 \textbf{1} & \makecell{99.48\% \\ (0.00\%)} & - & \makecell{97.62\% \\ (93.64\%)} & \makecell{95.63\% \\ (4.98\%)} & \makecell{73.25\% \\ (42.63\%)} & \makecell{95.49\% \\ (10.87\%)} & \makecell{97.64\% \\ (26.85\%)} & \makecell{23.43\% \\ (13.36\%)} & \makecell{95.48\% \\ (72.58\%)} & \makecell{65.52\% \\ (38.95\%)} \\ \hline
@@ -654,8 +645,6 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 }
 \captionof{table}{Entangled with weight decay}
 \end{table}
-
-\chapter{Conclusion}
 
 \newpage
 \bibliographystyle{plain}

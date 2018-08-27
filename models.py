@@ -1,7 +1,10 @@
+from collections import namedtuple
+
 import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.distributions.categorical import Categorical 
+from torchvision.models import vgg16
 
 from utils.model_utils import *
 
@@ -176,4 +179,20 @@ class MnistClassifier(nn.Module):
     x = F.dropout(x, training=self.training)
     x = self.fc2(x)
     return F.log_softmax(x, dim=1)
+
+
+class Vgg16(nn.Module):
+  def __init__(self):
+    super(Vgg16, self).__init__()
+    features = list(vgg16(pretrained=True).features)[:23]
+    self.features = nn.ModuleList(features).eval()
+
+  def forward(self, x):
+    results = []
+    for i, model in enumerate(self.features):
+      x = model(x)
+      if i in [1, 6, 11]:
+        results.append(x)
+        if i == 11:
+          return results
 
