@@ -44,7 +44,8 @@ class Trainer(BaseTrainer):
         recon_feat = self.nets['vgg16'](recon_batch)
         x_feat = self.nets['vgg16'](x)
         for fi in range(len(recon_feat)):
-          recon_loss += (recon_feat[fi] - x_feat[fi]).pow(2).mean()
+          recon_loss += (recon_feat[fi] - x_feat[fi]).pow(2).mean(0).sum()
+        pw_loss = recon_func(recon_batch, x)  # for logging
     
         # KL for gaussian
         kl_cont_dw = torch.empty(0).to(self.device)
@@ -63,13 +64,14 @@ class Trainer(BaseTrainer):
             kl_cats = torch.cat((kl_cats, kl_cat.view(1)))
           cat_cap_loss = self.get_cap_loss(kl_cats.sum(), step)
     
-        vae_loss = recon_loss + cont_cap_loss + cat_cap_loss
+        vae_loss = 3e-5*recon_loss + cont_cap_loss + cat_cap_loss
 
         self.opt['vae'].zero_grad()
         vae_loss.backward(retain_graph=True)
         self.opt['vae'].step()
         
         # log...
+        self.logger.log_val('pw_loss', pw_loss.item())
         self.logger.log_val('recon_loss', recon_loss.item())
         self.logger.log_val('vae_loss', vae_loss.item())
         self.logger.log_val('cur_cap', self.cur_cap, runavg=False)
