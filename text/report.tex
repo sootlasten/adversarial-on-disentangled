@@ -91,11 +91,9 @@ Summarise your report concisely.
 
 \noindent It has been argued \cite{bengio-representation} that such entangled representations are suboptimal for generalization, and incorporating inductive biases which would steer the representations towards \textit{disentanglement} would be beneficial. Indeed, it seems intuitively plausible that generalizing to novel configurations of concepts that were not encountered in the training distribution is easiest when relevant factors of variation in the input data are aligned with individual neurons in the latent space. Validating the intuition, such representations have recently shown promising results in zero-shot transfer learning \cite{darla}, semi-supervised learning \cite{dgpose}, and life-long learning \cite{vase}. \\
 
-\noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since the leading conjecture explaining the presence of adversarial examples posits that they come about due to excessive linearity of today's pattern recognizers \cite{explaining-and-harnessing}. However, models whose internal representations are disentangled are arguably less linear, since they are implicitly guided to capture the main generative factors of the data, which in datasets with enough complexity are highly non-linear with respect to inputs in the pixel space. \\
+\noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since one way to construct adversarial examples for encoder-decoder type models is to perturb the source image in such a way that its internal representation would be close to the representation of some target image, while simultaneously meddling with the pixels of the source image as little as possible \cite{kos-gen-adv, tabacof-gen-adv}. The success of this methodology implies that variational autoencoders do not preserve the locality of inputs in their latent space. It has been argued, however, that models whose internal representation is disentangled encode nearby points in pixel space to similar representations in latent space as well \cite{beta-vae}. If true, we would expect such models to be significantly more robust to adversarial examples of this type. \\
 
-\noindent Moreover, one way to construct adversarial examples for encoder-decoder type models is to perturb the source image in such a way that its internal representation would be close to the representation of some target image, while simultaneously meddling with the pixels of the source image as little as possible \cite{kos-gen-adv, tabacof-gen-adv}. The success of this methodology implies that variational autoencoders do not preserve the locality of inputs in their latent space. It has been argued, however, that models whose internal representation is disentangled encode nearby points in pixel space to similar representations in latent space as well \cite{beta-vae}. If true, we would expect such models to be significantly more robust to adversarial examples of this type. \\
-
-\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset \cite{mnist}, as well as for CelebA, a large-scale dataset of celebrety faces \cite{celeba}. Surprisingly, it was found that disentangled generative models are actually \textit{less} robust to attacks on both datasets, contradicting our initial rationale. This stands in stark contrast to previous work by Alemi et. al. \cite{deep-variational-bottleneck}, which performed similar analysis for supervised models, but arrived at the opposite conclusion, highlighting a fundamental difference between generative and discriminative models when it comes to adversarial examples. \\
+\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset \cite{mnist}. Surprisingly, it was found that disentangled generative models are actually \textit{less} robust to attacks on this dataset, contradicting our initial rationale. This stands in stark contrast to previous work by Alemi et. al. \cite{deep-variational-bottleneck}, which performed similar analysis for supervised models, but arrived at the opposite conclusion, highlighting a fundamental difference between generative and discriminative models when it comes to adversarial examples. \\
 
 \noindent The thesis is organized as follows. In Chapter 2, a sufficiently in-depth overview of variational autoencoders, disentanglement, and adversarial examples is given. Chapter 3 outlines the experimental methodology, and provides exact details of the analyses done in this thesis for reproducibility. Chapter 4 gives the results of the experiments. 
 
@@ -145,7 +143,7 @@ This chapter introduces the preliminary topics that are integral to understandin
 \end{center}
 \end{figure}
 
-\noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observable random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model \footnote{Note that we can focus on the marginal likelihood of individual datapoints, rather than the marginal likelihood of the whole dataset, since under the independence assumption, the former is composed of a sum of the latter: $\log p_{\boldsymbol{\theta}} (x^{(1)}, x^{(2)}, \dots, x^{(n)}) = \sum_{n=1}^N \log p_{\boldsymbol{\theta}} (\boldsymbol{x}^{(i)})$.}. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
+\noindent One immediate drawback to using more complicated latent variable models is that evaluating the likelihood turns out to be intractable, as one has to formally consider the probability of the observed datapoint under every possible setting of the latents. More specifically, consider an observed random variable $\boldsymbol{x}$, an unobserved latent $\boldsymbol{z}$, and their joint distribution $p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z})$ \footnote{Without loss of generality, let us assume the variables are continuous.}, where the vector $\boldsymbol{\theta}$ denotes the parameters of the generative model \footnote{Note that we can focus on the marginal likelihood of individual datapoints, rather than the marginal likelihood of the whole dataset, since under the independence assumption, the former is composed of a sum of the latter: $\log p_{\boldsymbol{\theta}} (x^{(1)}, x^{(2)}, \dots, x^{(n)}) = \sum_{n=1}^N \log p_{\boldsymbol{\theta}} (\boldsymbol{x}^{(i)})$.}. Then, using the sum rule of probability, we can express the marginal of $\boldsymbol{x}$ as $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \int p_{\boldsymbol{\theta}}(\boldsymbol{x}, \boldsymbol{z}) d \boldsymbol{z}$. \\
 
 \noindent Naturally, as we are unable to evaluate the likelihood function, explicit optimization of its monotonic tranform, the log-likelihood, presents difficulties as well. Fortunately, there exists a workaround, which entails optimizing a lower bound of the quantity of interest instead. By introducing a new distribution $q_{\boldsymbol{\phi}}(\boldsymbol{z} | \boldsymbol{x})$, parameterized by $\boldsymbol{\phi}$, into our framework, we can lower-bound the original log-likelihood as follows:
 
@@ -270,60 +268,61 @@ As already alluded to in the previous section, the variational autoencoder is a 
 
 The name "variational autoencoder" is usually reserved for a particular realization of the preceding framework, one where both the approximate posterior $q_{\boldsymbol{\phi}}(\boldsymbol{x}|\boldsymbol{z})$, as well as the conditional in the generative part of the model, $p_{\boldsymbol{\theta}}(\boldsymbol{z} | \boldsymbol{x})$, are parameterized by artificial neural networks. These distributions themselves are usually taken to be multivariate normals with diagonal covariances. The prior does not generally have learnable parameters, as it is taken to be an isotropic Gaussian: $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \mathcal{N}(\boldsymbol{z}; \boldsymbol{0}, \boldsymbol{I})$. Figure \ref{fig:vae} gives a schematic of this setup. \\
 
-\noindent A nice property that follows from having Gaussian distributions is the analytic tractability of the KL divergence featuring in the lower bound. \todo{Derive the corresponding closed-form equation.} \\
-
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.4\textwidth,natwidth=398,natheight=287]{vae}
-\caption{A schematic illustration of a variational autoencoder.}
+\caption{An illustration of a variational autoencoder. The blue rectangles represent entities whose dimensionality is equal to that of the input, while the gray rectangles signify parts of the graph that deal with the latent variable.}
 \label{fig:vae}
 \end{center}
 \end{figure}
 
-\noindent Looking at the general outline of the model in figure \ref{fig:vae}, it becomes apparent why it is called an autoencoder. An input $\boldsymbol{x}$ is fed through a neural network, which outputs the mean and diagonal covariance of the approximate posterior. Making use of the reparameterization trick, a sample is then drawn from this distribution. As the the dimension of the latent variable is usually much lower than that of the input, it is akin to the bottleneck layer of a regular autoencoder, and the whole underlying subnetwork (shown in green) is dubbed an encoder. The drawn vector $\boldsymbol{z}$ is subsequently fed through a second neural network, which outputs the estimated parameters of $p_{\boldsymbol{\theta}}(\boldsymbol{x}|\boldsymbol{z})$. As the estimated mean is obtained by upsampling the latent, and the conditional is maximized if it is equal to the original input, it bears resemblence to the decoding part of a conventional autoencoder, justifying the use of the name "decoder" for the underlying neural network.
+\noindent A particularly nice property that follows from the simple parameterization is the analytic tractability of the KL divergence featuring in the lower bound. Denoting the mean of the $i$-th dimesion of the $D$-dimensional approximate posterior as $\mu_i$, and the corresponding standard deviation as $\sigma_i$, the KL-divergence between the approximate posterior and the prior can be solved in closed-form \cite{vae}:
+
+\begin{equation}
+\begin{gathered}
+\mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) = \frac{1}{2} \sum_{i=1}^D (1 + \log((\sigma_i)^2) - \mu_i^2 - \sigma_i^2).
+\end{gathered}
+\end{equation}
+
+\bigskip
+
+\noindent Looking at the general outline of the model in Figure \ref{fig:vae}, it becomes apparent why it is called an autoencoder. An input $\boldsymbol{x}$ is fed through a neural network, which outputs the mean and diagonal covariance of the approximate posterior. Making use of the reparameterization trick, a sample is then drawn from this distribution. As the the dimension of the latent variable is usually much lower than that of the input, it is akin to the bottleneck layer of a regular autoencoder, and the subnetwork is dubbed an encoder. The drawn vector $\boldsymbol{z}$ is subsequently fed through a second neural network, which outputs the estimated parameters of $p_{\boldsymbol{\theta}}(\boldsymbol{x}|\boldsymbol{z})$. As the resulting mean is obtained by upsampling the latent, and the conditional is maximized if it is equal to the original input, it bears resemblence to the decoding part of a conventional autoencoder, justifying the use of the name "decoder" for the underlying neural network.
 
 \subsection{Incorporating discrete variables}
 
 In the previous subsections, we focussed on variational autoencoders with continuous variables, namely ones with Gaussian distributions. Sometimes, however, it would be appropriate for the posterior to include some discrete variables as well. For example, when modelling handwritten digits, some of dimensions of the posterior could correspond to thickness, angle, size, and digit class. While the first three factor of variation are reasonably modelled by continuous distributions, a discrete one is more natural for the last. Unfortunately, the reparameterization trick that allowed joint optimization of the parameters in the Gaussian case is not applicable for discrete variables. \\
 
-\noindent To get around taking direct samples from a discrete distribution, one might employ the Gumbel-Max trick \cite{Luce59}. Suppose our one-hot encoded random variable of interest, $Y$, has a discrete distribution with K choices, parameterized by unnormalized probabilities $(\alpha_1, \alpha_2, \dots, \alpha_K)$, where $\alpha_i \in (0, \infty)$. A sample $y$ can then be drawn from this distribution using the following scheme:
+
+\noindent To get around taking direct samples from a discrete distribution, one might employ the Gumbel-Max trick \cite{Luce59}. Suppose our one-hot encoded random variable of interest, $Y$, has a discrete distribution with $K$ choices, parameterized by unnormalized probabilities $(\alpha_1, \alpha_2, \dots, \alpha_K)$, where $\alpha_i \in (0, \infty)$. A sample $y$ can then be drawn from this distribution using the following scheme:
 
 \begin{enumerate}
-  \item Draw K independent samples from a uniform distribution whose supported lies on the open unit interval: $U_i \sim \text{Uniform}(0, 1), \text{ where } i = 1, 2, \dots, K$.
+  \item Draw $K$ independent samples from a uniform distribution whose supported lies on the open unit interval: $U_i \sim \text{Uniform}(0, 1), \text{ where } i = 1, 2, \dots, K$.
   \item For each of the drawn samples, evaluate $x_i = \log \alpha_i + G_i, \text{ where } G_i = -\log(-\log U_i)$ is a sample from the Gumbel distribution (hence the name of the trick).
-  \item Set $z_{\argmax_i \{x_i\}}$ to 1, and all other dimensions of $z$ to 0.
+  \item Set $y_{\argmax_i \{x_i\}}$ to 1, and all other dimensions of $y$ to 0.
 \end{enumerate}
 
 \begin{figure}
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=.75\linewidth]{gumbel-max}
-  \caption{adv}
+  \caption{Gumbel-max trick}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=.75\linewidth]{gumbel-softmax}
-  \caption{adv recon}
+  \caption{Gumbel-softmax trick}
 \end{subfigure}
-\caption{MNIST ent adv and adv recon}
+\caption{Schematics of the Gumbel-max and Gumbel-softmax tricks for 3 random variables. The blue shapes represent the parts of the system that we can and are interested in taking the gradients of. Note how the $\argmax$ operation in orange blocks the gradient, as its output is discrete, whereas the softmax operation relaxes the one-hot representation of the output, depicted as shades of gray instead of black and white, thus permitting gradient flow. Adapted from Maddison et. al. \cite{concrete}}
 \label{fig:concrete}
 \end{figure}
 
-% \begin{figure}
-% \begin{center}
-% \includegraphics[width=0.8\textwidth,natwidth=1050,natheight=358]{concrete}
-% \caption{Concrete}
-% \label{fig:concrete}
-% \end{center}
-% \end{figure}
-
 \bigskip
 
-\noindent This looks promising, as the uniform distribution that we sample from does not depend on any of the parameters of the encoder. However, it is still of no use for our purposes, as we have now introduced a non-continuous $\argmax$ operation. A solution, proposed concurrently by Maddison et. al. \cite{concrete}, and Jang et. al. \cite{gumbel-softmax}, is to approximate it by a softmax function with a tunable temperature parameter $\lambda \in (0, \infty)$, as shown in Equation \ref{eq:gumbel-softmax}. Note that in this case, our sample, drawn from what the authors call a Concrete distribution, is no longer discrete, but rather a continous relaxation of it that approximates a one-hot vector as $\lambda \rightarrow 0$. The difference between the original Gumbel-Max trick, and its Concrete relaxation is illustrated in Figure \ref{fig:concrete}.
+\noindent This looks promising, as the uniform distribution that we sample from does not depend on any of the parameters of the encoder. However, it is still of no use for our purposes, as we have now introduced a non-continuous $\argmax$ operation. A solution, proposed concurrently by Maddison et. al. \cite{concrete}, and Jang et. al. \cite{gumbel-softmax}, is to approximate it by a softmax function with a tunable temperature parameter $\lambda \in (0, \infty)$, as shown in Equation \ref{eq:gumbel-softmax}. Note that in this case, our sample, drawn from what the authors call a Concrete distribution, is no longer discrete, but rather a continous relaxation of it that approximates a one-hot vector as $\lambda \rightarrow 0$. The difference between the original Gumbel-Max trick, and its Concrete relaxation, sometimes dubbed the Gumbel-Softmax trick, is illustrated in Figure \ref{fig:concrete}.
 
 \begin{equation}
 \begin{gathered}
-z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}((\log \alpha_j + G_j) / \lambda)}.
+y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}((\log \alpha_j + G_j) / \lambda)}.
 \end{gathered}
 \label{eq:gumbel-softmax}
 \end{equation}
@@ -341,7 +340,7 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent The authors of the original paper \cite{concrete} provide several options for modifying the KL term, while arguing for replacing the discrete masses in the KL with Concrete densitites. However, unlike the Gaussian case, there is no closed form expression for the KL divergence between two Concrete distributions, so it is necessary to approximate it via sampling. However, for the types of models considered in this thesis, a variety of estimators have been found to exhibit too high of a variance, producing poor results as a consequence (Emilien Dupont, personal communication, August 1, 2018). Thus, we opted for replacing the original penalty with an analytic discrete KL term intead:
+\noindent The authors of the original paper \cite{concrete} provide several options for modifying the KL term, and deem that replacing the discrete masses in the KL with Concrete densitites yields best results. However, unlike the Gaussian case, there is no closed form expression for the KL divergence between two Concrete distributions, so it is necessary to approximate it via sampling. For the types of models considered in this thesis, a variety of estimators, including the one that Maddison et. al. \cite{concrete} advocate, have been found to exhibit too high of a variance, producing poor results as a consequence (Emilien Dupont, personal communication, August 1, 2018). Thus, we opted for replacing the original penalty with an analytic discrete KL term intead:
 
 \begin{equation}
 \begin{gathered}
@@ -356,20 +355,15 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \section{Disentangled representations}
 
-\todo{general intro and difference from invariance} \\
+\noindent According to Bengio et. al. \cite{bengio-representation}, a representation is disentangled if it separates explanatory sources of the data into different dimensions (e.g. units) in the latent space. Learning such a representation in an unsupervised manner is challenging, as there is no obvious mathematical objective to optimize. Indeed, the issue is akin to the chicken-and-egg problem, since one would seemingly need to be already aware of the main factors of variation to be able to distill them from the data into the model. \\
 
-\noindent Most earlier work on learning disentangled representations has tackled the problem with weakly supervised methods, which require some a-priori knowledge of the data generating factors \cite{transforming-ae, reed2014, yang2016}. DC-IGN \cite{dcign} is perhaps the most well-known method among such approaches. It adopts a clever curriculum learning \cite{bengio-curriculum} strategy to encode the data generating factors into a small subset latent variables in a VAE, each of which is a-priori assigned a symbolic interpretation. During training, a random latent from this predefined group is chosen per each mini-batch of training data, which in turn is carefully constructed such that all training examples in it would vary in only the chosen factor. Finally, the bottleneck layer of the underlying VAE is regularized to indeed only capture all the variance in the current batch with a single latent. \\
+\noindent Most earlier work on learning disentangled representations has thus tackled the problem with weakly supervised methods, which require some a-priori knowledge of the data generating factors \cite{transforming-ae, reed2014, yang2016}. DC-IGN \cite{dcign} is perhaps the most well-known method among such approaches. It adopts a clever curriculum learning \cite{bengio-curriculum} strategy to encode the data generating factors into a small subset latent variables in a VAE, each of which is a-priori assigned a symbolic interpretation. During training, a random latent from this predefined group is chosen per each mini-batch of training data, which in turn is carefully constructed such that all training examples in it would vary in only the chosen factor. Finally, the bottleneck layer of the underlying VAE is regularized to indeed only capture all the variance in the current batch with a single latent. \\
 
-\noindent \todo{Independently controllable factors} \\
-
-\noindent \todo{Generative models like attend, infer and repeat} \\
-
-\noindent A particularly interesting approach that requires no supervision is Shmidhuber's predictability minimization \cite{pred-min-schmidhuber}. They introduce additional submodules for each unit in an autoencoder's bottleneck layer which try to predict the unit from the remaining ones. In turn, the model is is concurrently optimized to minimize the predictability of the units. The scheme was motivated by the idea that such a minimax game would give rise to an internal representation where each dimension is statistically independent of the others. While this 'competitive learning' framework was indeed found to be able to learn such factorial codes on toy binary datasets, it has not been shown to achieve promising results on more complicated inputs. \\
+\noindent A particularly interesting approach that requires no supervision is Shmidhuber's predictability minimization \cite{pred-min-schmidhuber}. It introduces additional submodules for each unit in an autoencoder's bottleneck layer which try to predict the unit from the remaining ones. In turn, the model is is concurrently optimized to minimize the predictability of the units. The scheme was motivated by the idea that such a minimax game would give rise to an internal representation where each dimension is statistically independent of the others. While this 'competitive learning' framework was indeed found to be able to learn such factorial codes on toy binary datasets, it has not been shown to be able to scale up to more complicated inputs. \\
 
 \noindent The first scalable, purely unsupervised method that showed reasonable level of disentanglement on real-world datasets was InfoGAN, proposed by Chen et. al. \cite{infogan}. They extended the powerful generative adversarial network (GAN) framework \cite{gan} with an additional objective, which would encourage the information between a small subset of the input noise variables and the generated output to be maximized. In practice, this was achieved by adding an additional auxiliary network into the system. The subnetwork, optimized concurrently with the original GAN objective, was fed with the generated images, and tasked to predict the values of a subset of the noise variables that gave rise to it. Contextually, InfoGAN can be seen as a close cousin of both DC-IGN and predictability minimization, borrowing the idea that only a subset of latents should be interpretable from the former, while having an additional subnetwork that predicts the latent activations is akin to the approach of the latter. \\
 
 \noindent The work most relevant to this thesis is that of Higgins et. al. \cite{beta-vae}, which demonstrated that simply adding more weight to the KL term in the VAE objective function encourages the posterior to become disentangled. In particular, they multiplied the divergence measure by a constant $\beta > 1$, giving the model its name, $\beta$-VAE:
-
 \begin{equation}
 \begin{gathered}
 \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) =
@@ -379,11 +373,9 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \end{equation}
 
 \bigskip
+\noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as enjoying better training stability. The use of GANs as a backbone has proved to be prohibitive for InfoGAN, as they are notorious for their extremely unstable behaviour in training. Adding further complications, vanilla GANs do not optimize an explicit density function, making it hard to measure the training progress quantitatively \cite{gan-tutorial}. While some recent works have addressed these problems with some success \cite{wgan, wgan-gp, began}, Kim et. al. \cite{factor-vae} found that pluggin them into the InfoGAN framework gives inconsistent results. As $\beta$-VAE uses a principled likelihood-based approach in place of a minimax game whose solution lies at a saddle point in a high-dimensional space, its training dynamics are much more wiedly. \\
 
-\noindent The method superseded InfoGAN, proving to be superior in disentangling, as well as enjoying better training stability. In particular, the use of GANs as a backbone has proved to be prohibitive for InfoGAN, as they are notorious for their extremely unstable behaviour in training. Adding further complications, vanilla GANs do not optimize an explicit density function, making it hard to measure the training progress quantitatively \cite{gan-tutorial}. While some recent works have addressed these problems with some success \cite{wgan, wgan-gp, began}, Kim et. al. \cite{factor-vae} found that pluggin them into the InfoGAN framework gives inconsistent results. As $\beta$-VAE uses a principled likelihood-based approach in place of a minimax game whose solution lies at a saddle point in a high-dimensional space, its training dynamics are much wiedly. \\
-
-\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. \cite{understanding-beta-vae} build upon it by proposing an enhanced optimization scheme based on some well-developed intuitive arguments. They analyse the $\beta$-VAE objective via the lens of the information bottleneck principle \cite{tishby-ib}. The principle posits that a good internal representation $Z$ of a learning system is one which is maximally informative about the output $Y$, while also compressing the information in the input $X$. Mathematically, this intuition is expressed as maximizing a Lagrangian, where "informativeness" is naturally measured by mutual information, denoted as $I(\cdot; \cdot)$:
-
+\noindent In a closely related follow up work to $\beta$-VAE, Burgess et. al. \cite{understanding-beta-vae} built upon it by proposing an enhanced optimization scheme based on some well-developed intuitive arguments. They analysed the $\beta$-VAE objective via the lens of the information bottleneck principle \cite{tishby-ib}. The principle posits that a good internal representation $Z$ of a learning system is one which is maximally informative about the output $Y$, while also compressing the information in the input $X$. Mathematically, this intuition is expressed as maximizing a Lagrangian, where "informativeness" is naturally measured by mutual information, denoted as $I(\cdot; \cdot)$:
 \begin{equation}
 \begin{gathered}
 \max \big[ I(Z; Y) - \beta I(X;Z) \big]
@@ -395,27 +387,27 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent Taking this information-theoretic view of the variational autoencoder, we can conceptualize the probabilistic encoder parameterizing a diagonal Gaussian $q(\boldsymbol{z}|\boldsymbol{x})$ as an independent set of noisy channels $\{z_i\}$, each transmitting information about the input $\boldsymbol{x}$. Accordingly, the KL divergence in Equation \ref{eq:beta-vae} can be thought of as the maximum capacity of said channels per data sample. When the posterior collapses to a unit Gaussian prior $p(\boldsymbol{z})$, the KL term vanishes, and no information about the input is let through the latent bottleneck. Armed with this intuitive framework, it is interesting to analyse how does the reconstruction loss of VAE influence the development of the latent channels. \\
 
-\noindent Burgess et. al. \cite{understanding-beta-vae} argue that trading off the two terms in the $\beta$-VAE objective encourages an encoder to be learned which would have the property that nearby points in data space are close together in the latent space as well. Indeed, suppose that two very different datapoints (as measured by the L2 norm) in pixel-space have similar representations in the latent space. As random noise that is injected into the bottleneck layer, it is likely that the two codes get "mixed up", resulting in the decoder reconstructing the wrong input and incurring a high loss. The situation is illustred in Figure \ref{fig:understanding-bvae}. To avoid such a scenario, we would like the encoding of each datapoint to be as far from others' encodings as possible, which is achieved by squeezing the posterior variances and dispersing their means across datapoints. This, however, is in turn discouraged by the KL penalty term, which pressures the channels to be overlapping for all datapoints. A reasonable compromise between these two opposing forces would be an arrangmenet where the latent space is such that when we do make the occasional mistake of decoding the wrong datapoint, we are at least outputting something that is not too far from the original. \\
-
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.3\textwidth,natwidth=215,natheight=297]{understanding-bvae}
-\caption{\todo{Caption!!}}
+\caption{A schematic that illustrates why a VAE is pressured to preserve the locality of inputs in the latent space. If the parmeters of $q(\boldsymbol{z} | \boldsymbol{x}_1)$ are close to that of $q(\boldsymbol{z} | \boldsymbol{x}_2)$, as depicted by the overlapping circles labelled $\boldsymbol{\mu_1}$ and $\boldsymbol{\mu_2}$, a latent $\boldsymbol{z}$ could be sampled such that $\mathcal{N}(\boldsymbol{x}_2|\boldsymbol{\mu_{x|z}}, \boldsymbol{\Sigma_{x|z}}) > \mathcal{N}(\boldsymbol{x}_1|\boldsymbol{\mu_{x|z}}, \boldsymbol{\Sigma_{x|z}})$. Intuitively, this can be thought of as reconstructing the "wrong" datapoint, a mistake whose cost is proportional to the distance between the original and "wrong" datapoint in pixel space.}
 \label{fig:understanding-bvae}
 \end{center}
 \end{figure}
 
+\noindent Burgess et. al. \cite{understanding-beta-vae} argue that trading off the two terms in the $\beta$-VAE objective encourages an encoder to be learned which would have the property that nearby points in data space are close together in the latent space as well. Indeed, suppose that two very different datapoints (as measured by the L2 norm) in pixel-space have similar representations in the latent space. As random noise that is injected into the bottleneck layer, it is likely that the two codes get "mixed up", resulting in the decoder reconstructing the wrong input and incurring a high loss. The situation is illustred in Figure \ref{fig:understanding-bvae}. To avoid such a scenario, we would like the encoding of each datapoint to be as far from others' encodings as possible, which is achieved by squeezing the posterior variances and dispersing their means across datapoints. This, however, is in turn discouraged by the KL penalty term, which pressures the channels to be overlapping for all datapoints. A reasonable compromise between these two opposing forces would be an arrangmenet where the latent space is such that when we do make the occasional mistake of decoding the wrong datapoint, we are at least outputting something that is not too far from the original. \\
+
 \noindent A second fundamental observation Burgess et. al. \cite{understanding-beta-vae} make is that when the latent channel capacities are constrained to be very low, the only information that gets through the bottleneck is one whose utilization by the decoder increases the value of the reconstruction term $\mathbb{E}_{\boldsymbol{z} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z}) \big]$ the most. As an example, suppose we have a dataset of white shapes drawn on a black canvas, each of which is has 5 factors of variation: translation along the vertical and horizontal axes, scale, oritentation, and class (heart, square, or ellipse) \cite{dsprites17}. Now, for a high value of $\beta$, only positional information of the sprite might get through the overly constrained latent bottleneck, as getting the position wrong incurs the most cost in terms of log-likelihood. Subsequently, by gradually increasing the capacities of the latent channels, the model starts to allocate additional latents to new factors of variation, like scale and rotation. Crucially, due to the data locality pressure described before, all the factors of variation are encoded into distinct latents, satisfying our working definition of disentanglement. Figure \ref{fig:dsprites-trav} illustrates this phenomenon. \\
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.6\textwidth,natwidth=749,natheight=271]{gradual-encoding}
-\caption{\todo{Caption!!}}
+\caption{A gradual encoding of data generative factors into the latents on the dSprites dataset \cite{dsprites17} for randomly chosen datapoints. At the start of training, when the capacities of the latent channels are kept low, only the x and y positions of the sprites is encoded (bottom row). Next, as capacity is increased, the size of the sprite is captured (third row). Finally, the rotation and class of the figure is discovered (second row).}
 \label{fig:dsprites-trav}
 \end{center}
 \end{figure}
 
-\noindent The intuitive framework laid out above suggests a natural modification to the $\beta$-VAE objective, given by Equation \ref{eq:cc-vae}. In the new formulation, the capacities of the channels, denoted as $C$, are made explicit, and increased gradually in the course of training. The new hyperparameter $\gamma$ specifies the degree of pressure put on the latent channels to be close to their desired capacity. It is usually chosen big enough that the KL term would be relatively close to $C$ at all times, as this makes the external control of the channel capacities rather convenient. \\
+\noindent The intuitive framework laid out above suggests a natural modification to the $\beta$-VAE objective, given by Equation \ref{eq:cc-vae}. In the new formulation, the capacities of the channels, denoted as $C$, are made explicit, and increased gradually in the course of training. The new hyperparameter $\gamma$ specifies the degree of pressure put on the latent channels to be close to their desired capacity. It is usually chosen big enough that the KL term would be relatively close to $C$ at all times, as this makes the external control of the channel capacities rather convenient.
 
 \begin{equation}
 \begin{gathered}
@@ -427,22 +419,23 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent While $\beta$-VAE with a controlled capacity increase showed good results disentangling continuous factors of variation, it struggled to capture discrete generative factors. For example, it was unable to completely disentangle the classes of the shapes in the sprites dataset. As a way to overcome this difficuly, Dupont introduced JointVAE \cite{joint-vae}, which augmented the original multivariate normal latent distirbution of $\beta$-VAE with categorical Concrete random variables, leading to the following objective:
+\noindent While $\beta$-VAE with a controlled capacity increase showed good results disentangling continuous factors of variation, it struggled to capture discrete generative factors. For example, it was unable to disentangle the individual classes in the MNIST handwritten digits dataset. As a way to overcome this difficuly, Dupont introduced JointVAE \cite{joint-vae}, which augmented the original multivariate normal latent distirbution of $\beta$-VAE with categorical Concrete random variables, leading to the following objective:
 
 \begin{equation}
 \begin{gathered}
 \mathcal{L}(\boldsymbol{x}; \boldsymbol{\theta}, \boldsymbol{\phi}) =
 \mathbb{E}_{\boldsymbol{z, c} \sim q_{\boldsymbol{\phi}}(\boldsymbol{z, c}|\boldsymbol{x})} \big[ \log p_{\boldsymbol{\theta}} (\boldsymbol{x} | \boldsymbol{z, c}) \big] - \\ \gamma \big\{ | \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{z}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{z})) - C_z | + | \mathcal{D}_\text{KL}(q_{\boldsymbol{\phi}}(\boldsymbol{c}|\boldsymbol{x}) || p_{\boldsymbol{\theta}}(\boldsymbol{c})) - C_c | \big\},
 \end{gathered}
+\label{eq:joint-vae}
 \end{equation}
 
 \bigskip
 
-\noindent where $\boldsymbol{z}$ and $\boldsymbol{c}$ denote the continous Gaussian and Concrete latent variables, respectively. The new model was shown to be able to outperform the original formulation of $\beta$-VAE on datasets where capturing discrete generative factors is paramount to achieving good reconstruction quality, as is the case for MNIST handwritten digit dataset. However, complete disentanglement of the sprites dataset is still beyond the capabilities of current models, as the types of shapes are all quite similar in terms of the area they cover, making the possible increase in log-likelihood marginal.
+\noindent where $\boldsymbol{z}$ and $\boldsymbol{c}$ denote the continous Gaussian and Concrete latent variables, respectively. The new model was shown to be able to outperform the original formulation of $\beta$-VAE on datasets where capturing discrete generative factors is paramount to achieving good reconstruction quality, as is the case for MNIST. However, complete disentanglement of the sprites dataset is still beyond the capabilities of current models, as the types of shapes are all quite similar in terms of the area they cover, making the possible increase in log-likelihood marginal.
 
 \section{Adversarial examples}
 
-\noindent The problem of adversarial examples in the context of deep neural networks was first articulated by Szegedy et. al. \cite{intriguing-properties}. They showed that by perturbing the pixels of the input image in a by an imperceptibly small amount, it is possible to cause neural-network based classifiers to assign high likelihoods to arbitrary classes. It is important to stress that the pixels of the original image are not changed randomly, but are rather done so in a principled way. More specifically, the authors use box-constrained L-BFGS \cite{NoceWrig06} to solve the following optimization problem \footnote{Note that this specific formulation constrains the images to have a single channel and either be normalized or grayscale. However, generalizing it to unnormalized RGB images is straightforward.}:
+\noindent The problem of adversarial examples in the context of deep neural networks was first articulated by Szegedy et. al. \cite{intriguing-properties}. They showed that by perturbing the pixels of the input image by an (almost) imperceptibly small amount, it is possible to cause neural-network based classifiers to assign high likelihoods to arbitrary classes. It is important to stress that the pixels of the original image are not changed randomly, but are rather done so in a principled way. More specifically, the authors use box-constrained L-BFGS \cite{NoceWrig06} to solve the following optimization problem \footnote{Note that this specific formulation constrains the images to have a single channel and either be normalized or grayscale. However, generalizing it to unnormalized RGB images is straightforward.}:
 
 \begin{equation}
 \begin{aligned}
@@ -454,48 +447,91 @@ z_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent where $\boldsymbol{r}$ is the m-dimensional perturbation vector that is added to the original image $\boldsymbol{x}$, such that the classifier $f$ would output the class $l$. $\text{loss}_f$ is some continuous measure of classification loss, commmonly taken to be cross-entropy, while the coefficient $c > 0$ balances the the size of the perturbation and the loss for the generated adversarial image. Of course, the problem is only of interest when $f(\boldsymbol{x}) \neq l$. Figure \todo{todo!} illustrates some adversarial examples $\boldsymbol{x}$ + $\boldsymbol{r}$ generated by this procedure.
+\noindent where $\boldsymbol{r}$ is the m-dimensional perturbation vector that is added to the original image $\boldsymbol{x}$, such that the classifier $f$ would output the class $l$. $\text{loss}_f$ is some continuous measure of classification loss, commmonly taken to be cross-entropy, while the coefficient $c > 0$ balances the the size of the perturbation and the loss for the generated adversarial image. Of course, the problem is only of interest when $f(\boldsymbol{x}) \neq l$. Figure \ref{fig:adversarial-cls} illustrates some adversarial examples $\boldsymbol{x}$ + $\boldsymbol{r}$ generated by this procedure.
 
 \bigskip
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.6\textwidth,natwidth=814,natheight=271]{adversarial-cls}
-\caption{\todo{Caption!!}}
+\caption{Adversarial examples for the MNIST handwritten digits dataset. The left image of each pair depicts the original, correctly classified image. The right image, however, is the adversarial input, derived from the original, that fools the classifier.}
 \label{fig:adversarial-cls}
 \end{center}
 \end{figure}
 
-
-\noindent In subsequent work, Goodfellow et. al. \cite{explaining-and-harnessing} argue that the existence of adversarial examples can be at least partially explained by their linear nature. Linear models have the property that their outputs change proportionally to the change in the intensity of any of the pixels. Thus, given an input with high enough dimensionality, one can make small perturbtions to a large number of pixels, all of which add up to produce a large shift in the output. Goodfellow et. al. make the observation that this same phenomenon can manifest itself in modern deep neural networks, as they are often explicitly constructed to be rather linear for ease of optimization. Illustrative examples include the rectified linear units as general-purpose activation functions \cite{relu}, LSTMs for time-series analysis \cite{lstm}, and residual networks for compute vision \cite{resnet}. Moreover, adding further evidence in favour of the linearity hypothesis, they observed that RBF networks \cite{rbf-networks} - a method that classify inputs based on their similarity, as measured by the exponentiated quadratic kernels, to a set of predefined centroids - are significantly more robust to adversarial examples. \\
+\noindent In subsequent work, Goodfellow et. al. \cite{explaining-and-harnessing} argue that the existence of adversarial examples can be at least partially explained by the linear nature of the underlying classifiers. Linear models have the property that their outputs change proportionally to the change in the intensity of any of the pixels. Thus, given an input with high enough dimensionality, one can make small perturbtions to a large number of pixels, all of which add up to produce a large shift in the output. Goodfellow et. al. make the observation that this same phenomenon can manifest itself in modern deep neural networks, as they are often explicitly constructed to be rather linear for ease of optimization. Illustrative examples include the rectified linear units as general-purpose activation functions \cite{relu}, LSTMs for time-series analysis \cite{lstm}, and residual networks for compute vision \cite{resnet}. Moreover, adding further evidence in favour of the linearity hypothesis, they observed that RBF networks \cite{rbf-networks} - a method that classifies inputs based on their similarity (as measured by the exponentiated quadratic kernels) to a set of predefined centroids - are significantly more robust to adversarial examples. \\
 
 \noindent One of the most surprising properties of adversarial examples is their generality and transferability. Early work on the problem found that they generalize across different partitions of the same dataset \cite{intriguing-properties} and across models with different architectures \cite{explaining-and-harnessing}. More recently, Kurakin. et. al. \cite{kurakin16} discovered that they can also be extrapolated to the physical world, showing that models trained on the regular ImageNet \cite{imagenet} dataset are misclassifying adversarial examples even if they are printed on paper and viewed through a physical camera. Somewhat reassuringly, they have also been found to fool time-limited humans \cite{humans-adv}. While most research on adversarial examples has focussed on image classification, models trained to solve other kinds of machine learning tasks are subject to them as well, including ones specializing in speech-to-text \cite{audio-adv}, neural machine translation \cite{nmt-adv}, and deep reinforcement learning \cite{rl-adv}. \\
 
-\noindent Pertinent to this thesis is the work by Kos. et. al. \cite{kos-gen-adv}, who investigate adversarial examples in the context of generative models. It was indeed found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}. \\
+\noindent Pertinent to this thesis is the work of Kos. et. al. \cite{kos-gen-adv}, who investigate adversarial examples in the context of generative models. They found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS for optimization, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}. \\
 
-\noindent Another closely related work is that of Alemi et. al. \cite{deep-variational-bottleneck}, in which they parameterize the information bottleneck in Equation \ref{eq:ib} using neural networks. By subsequently deriving a variational lower bound to this objective and making use of the reparatemerization trick, they end up with a model anologus to that of $\beta$-VAE, given that the output variable $Y$ in Equation \ref{eq:ib} is taken to be the reconstruction of the input. However, as their treatment is more broad, they are also able to generalize this approach to a classification setting, by taking $Z$ to be the class label. Intuitively, this amounts to swapping the decoder of $\beta$-VAE with an appropriate classifier. To demonstrate the usefulness of the bottleneck principle, they measured the robustness of the resulting classifier to adversarial examples on the MNIST and ImageNet datasets. They found that the model becomes progressively harder to fool as the capacity of the bottleneck is increased.
+\noindent Another relevant work from our point of view is that of Alemi et. al. \cite{deep-variational-bottleneck}, in which they parameterize the information bottleneck in Equation \ref{eq:ib} using neural networks. By subsequently deriving a variational lower bound to this objective and making use of the reparatemerization trick, they end up with a model anologus to that of $\beta$-VAE, given that the output variable $Y$ in Equation \ref{eq:ib} is taken to be the reconstruction of the input. However, as their treatment is more broad, they are also able to generalize this approach to a classification setting, by taking $Y$ to be the class label. Intuitively, this amounts to swapping the decoder of $\beta$-VAE with an appropriate classifier. To demonstrate the usefulness of the bottleneck principle, they measured the robustness of the resulting classifier to adversarial examples on the MNIST and ImageNet datasets. They found that the model becomes progressively harder to fool as the capacity of the bottleneck is increased.
 
 \chapter{Methods}
 
-\noindent To measure the effect that disentangling has on the ability to generate adversarial examples for VAEs, we used $\beta$-VAE as the appropriate model. The analysis was carried out on the MNIST dataset, due to its several desirable properties. \\
+\noindent We used the MNIST handwritten digits dataset to measure the effect that a disentangled representation has on the ability to generate adversarial examples for VAEs. The dataset consists of $70,000$ images (partitioned into a train-eval-test split of $50,000$, $10,000$ and $10,000$ datapoints, respectively), each of which is assigned to a numeric class from 0 to 9. MNIST is one of the few datasets that have been extensively analysed both in the disentanglement, as well as in the adversarial example literature. It was the first dataset for which adversarial examples were constructed \cite{intriguing-properties}, and it has been shown that at least 3 factors of variation of handwritten digits can be disentangled on this dataset: class, angle, and thickness \cite{infogan}, \cite{joint-vae}. Moreover, the two most closely related works to this thesis, that of Kos et. al. and Alemi et. al., concentrate on MNIST as well, making drawing comparisons easier. \\
 
-\noindent First, it is one of the few datasets that have been extensively analysed both in the disentanglement, as well as in the adversarial example literature. Indeed, MNIST was one of the first dataset for which adversarial examples were constructed \cite{intriguing-properties}, and it has been shown that at least 3 factors of variation of handwritten digits can be disentangled on this dataset: class, angle, and thickness \cite{infogan}, \cite{joint-vae}. Moreover, the two most closely related works to this thesis, that of Kos et. al. and Alemi et. al, concentrate on MNIST as well, making drawing comparisons easier. \\
+\noindent We also experimented with generating adversarial examples for other datasets, including dSprties and CelebA, a large-scale dataset of celebrety faces \cite{celeba}. Unfortunately, we found that dSprites is not sensitive to adversarial examples in the generative setting. This phenomenon is possibly due to the relatively simple visual appearance of the datapoints, resulting in 2 different inputs to have a relatively sparse set of common features that could be made use of while generating an adversarial input. Similarly, for CelebA, we were unable to construct adversarial examples with enough visual fidelity that would permit reasonable quantitative analysis to be carried out. \\
 
-\noindent Second, MNIST allows 
+\noindent As our disentangled model, we used JointVAE \cite{joint-vae}, an equivalent model to $\beta$-VAE, but with both continuous and discrete (or Concrete) latent variables, whose channel capacities were gradually increased during training. A regular VAE without any regularization was taken to be a baseline. However, as decreasing the capacity of the latent channels constrains the amount of information that gets through the bottleneck, the reconstructions produced by JointVAE are somewhat worse than that of a regular VAE. In order to account for that effect, we also trained a second baseline model, which was regularized using weight-decay and achieved similar reconstruction quality as our disentangled model. All 3 trained models had the same architecture as was used by Dupont \cite{joint-vae}, outlined in Table \ref{tab:architecture}. \\
 
 \begin{center}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Encoder} & \textbf{Decoder} \\ \hline
-\text{$\boldsymbol{x} \in \mathbb{R}^{32\times32}$ grayscale image} & \text{$\boldsymbol{z} \in \mathbb{R}^{10}$, and $\boldsymbol{c}$ is one-hot 10-dim}  \\ \hline
+\text{$\boldsymbol{x} \in \mathbb{R}^{32\times32}$ grayscale image} & \text{$\boldsymbol{z} \in \mathbb{R}^{20}$} \\ \hline
 \text{Conv 4$\times$4. 32 ReLU, 2 stride} & Dense. 128 ReLU \\ \hline
 \text{Conv 4$\times$4. 32 ReLU, 2 stride} & Dense. 64$\times$4$\times$4 ReLU \\ \hline
 \text{Conv 4$\times$4. 64 ReLU, 2 stride} & Upconv 4$\times$4. 64 ReLU, 2 stride \\ \hline
 \text{Dense. 128 ReLU} & Upconv 4$\times$4. 32 ReLU, 2 stride \\ \hline
-\text{Dense. 128 linear} & Upconv 4$\times$4. 32 sigmoid, 2 stride \\ \hline
+\text{Dense. 20 linear} & Upconv 4$\times$4. 32 sigmoid, 2 stride \\ \hline
 \end{tabular}
-\captionof{table}{VAE architecture on MNIST.}
+\captionof{table}{VAE architecture used for the experiments carried out in this work. The bottleneck layer parameterized a 10-dimensional diagonal multivariate normal distribution, as well as a 10-way categorical Concrete distribution, which results in a 20-dimensional latent vector to be fed into the decoder.}\label{tab:architecture}
 \end{center}
+
+\noindent All models were trained with the Adam optimizer with a constant learning rate of $0.0001$ for $100,000$ randomly chosen batches from the training set with a mini-batch size of $64$. Following the guidelines of Maddison et. al. \cite{concrete} \footnote{They show that at temperatures lower than $(n-1)^{-1}$, where $n$ is the dimensionality of the Concrete variable, the probability simplex corresponding to the Concrete distribution is guaranteed not to have any modes in its interior. This gives us some confidence that our continuous relaxation is not too far from the corresponding discretized variable.}, the temperature parameter for the 10-way categorical Concrete distribution was taken to be $0.1$. For JointVAE, the initial latent capacities for both the continuous and discrete KL terms ($C_z$ and $C_c$ in in Equation \ref{eq:joint-vae}, respectively) were taken to be 0, which were linearly increased to $5$ over the whole training procedure. The capacity coefficient $\gamma$ for FactorVAE was taken to be $30$, which ensured that the KL was close to its target value at all times. The weight-decay coefficient for VAE with L2 regularization was chosen to be $0.5$. \\
+
+\noindent To generate adversarial examples for the preceding models, we used the latent-attack methodology of Kos et. al. \cite{kos-gen-adv}. In particular, the optimization problem in Equation \ref{eq:adv-gen} is solved with the Adam optimizer for $1000$ steps, with a learning rate of $0.001$ and a relative weighting coefficient $\lambda = 1$.
+
+\begin{equation}
+\begin{aligned}
+\argmin_{\boldsymbol{x}_{*}} \text{ } &\lambda \Vert \boldsymbol{x}_s - \boldsymbol{x}_{*} \Vert_2 + \Vert [\boldsymbol{\mu}_t, \boldsymbol{\alpha}_t]^T - [\boldsymbol{\mu}_{*}, \boldsymbol{\alpha}_{*}]^T \Vert_2 \\ 
+\text{subject to } &\boldsymbol{x_{*}} \in [0, 1]^m,
+\end{aligned}
+\label{eq:adv-gen}
+\end{equation}
+
+\bigskip
+
+\noindent where $\boldsymbol{x}_s$ is the original $m$-dimensional source image, $\boldsymbol{\mu}_t$ represents the approximate posterior mean of the target image which we are trying to adversarially reconstruct, $\boldsymbol{\alpha}_x$ represents the logits of the target's latent Concrete distribution, and $\boldsymbol{\mu}_*$, $\boldsymbol{\alpha}_*$ represent the same quantities, but for the adversarial image $\boldsymbol{x}_{*}$. \\
+
+\noindent Following Kos et. al. \cite{kos-gen-adv}, a classifier, trained to recognize the types of MNIST digits, was used to derive two metrics for quantifying the effectiveness of the attacks. The model, whose arcitecture is outlined in Table \ref{tab:cls-arch}, was trained with momentum-based stochastic gradient descent for $10$ epochs on the MNIST training set with a batch size of $64$. After training, it achieved a test set accuracy of $98\%$. 
+
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+\textbf{Classifier} \\ \hline
+\text{$\boldsymbol{x} \in \mathbb{R}^{32\times32}$ grayscale image} \\ \hline
+\text{Conv 5$\times$5. 10 ReLU, 1 stride} \\ \hline
+\text{Maxpool 2$\times$2. 2 stride} \\ \hline
+\text{Conv 5$\times$5. 10 ReLU, 1 stride} \\ \hline
+\text{Maxpool 2$\times$2. 2 stride} \\ \hline
+\text{Dropout (p=0.5)} \\ \hline
+\text{Dense. 50 ReLU} \\ \hline
+\text{Dense. 10 softmax} \\ \hline
+\end{tabular}
+\captionof{table}{Architecture of a simple MNIST classifier.}\label{tab:cls-arch}
+\end{center}
+
+\bigskip
+
+\noindent The first metric, $AS_{\text{ignore-target}}$ measures the adversarial example's ability to reconstruct an image that depicts a digit that is different from that of the source image. Under this metric, an attack is successful even if the reconstructed digit has a different class than the source image \textit{and} the target image. \todo{More\dots} \\
+
+\noindent The second metric, $AS_{\text{target}}$ \dots \todo{More\dots} \\
+
+\noindent Suppose the MNIST test set is partitioned into 9 disjoint subsets, with  subset $S_j$ containing the images corresponding to class $j$, with $j = 0, 1, \dots, 9$. For each image $\boldsymbol{x}$ belonging to class $i$ in the MNIST test set, a random example $\boldsymbol{x}_j$ was drawn from each of the partitions $S_j$, $j \neq i$. The $9$ adversarial attacks were then carried out with $\boldsymbol{x}$ as source and $\boldsymbol{x}_j$ as targets. The generated adversarial examples were then fed into the MNIST classifier 
+
+\noindent Following Kos et. al. \cite{kos-gen-adv}, two metrics were used to derive attack effectiveness 
 
 \chapter{Results}
 
