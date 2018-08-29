@@ -5,6 +5,7 @@
 \pagestyle{plain}
 \usepackage[table]{xcolor}
 \usepackage{color}
+\usepackage{bbm}
 \usepackage{amssymb,graphicx,color}
 \usepackage{subcaption}
 \usepackage{amsfonts}
@@ -469,11 +470,11 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \chapter{Methods}
 
-\noindent We used the MNIST handwritten digits dataset to measure the effect that a disentangled representation has on the ability to generate adversarial examples for VAEs. The dataset consists of $70,000$ images (partitioned into a train-eval-test split of $50,000$, $10,000$ and $10,000$ datapoints, respectively), each of which is assigned to a numeric class from 0 to 9. MNIST is one of the few datasets that have been extensively analysed both in the disentanglement, as well as in the adversarial example literature. It was the first dataset for which adversarial examples were constructed \cite{intriguing-properties}, and it has been shown that at least 3 factors of variation of handwritten digits can be disentangled on this dataset: class, angle, and thickness \cite{infogan}, \cite{joint-vae}. Moreover, the two most closely related works to this thesis, that of Kos et. al. and Alemi et. al., concentrate on MNIST as well, making drawing comparisons easier. \\
+\noindent We used the MNIST handwritten digits dataset to measure the effect that a disentangled representation has on the ability to generate adversarial examples for VAEs. The dataset consists of $70,000$ images (partitioned into a train-eval-test split of $50,000$, $10,000$ and $10,000$ datapoints, respectively), each of which is assigned to a numeric class from 0 to 9. MNIST is one of the few datasets that have been extensively analysed both in the disentanglement, as well as in the adversarial example literature. It was the first dataset for which adversarial examples were constructed \cite{intriguing-properties}, and it has been shown that at least 3 factors of variation of handwritten digits can be disentangled on this dataset: class, angle, and thickness \cite{infogan, joint-vae}. Moreover, the two most closely related works to this thesis, that of Kos et. al. and Alemi et. al., concentrate on MNIST as well, making drawing comparisons easier. \\
 
 \noindent We also experimented with generating adversarial examples for other datasets, including dSprties and CelebA, a large-scale dataset of celebrety faces \cite{celeba}. Unfortunately, we found that dSprites is not sensitive to adversarial examples in the generative setting. This phenomenon is possibly due to the relatively simple visual appearance of the datapoints, resulting in 2 different inputs to have a relatively sparse set of common features that could be made use of while generating an adversarial input. Similarly, for CelebA, we were unable to construct adversarial examples with enough visual fidelity that would permit reasonable quantitative analysis to be carried out. \\
 
-\noindent As our disentangled model, we used JointVAE \cite{joint-vae}, an equivalent model to $\beta$-VAE, but with both continuous and discrete (or Concrete) latent variables, whose channel capacities were gradually increased during training. A regular VAE without any regularization was taken to be a baseline. However, as decreasing the capacity of the latent channels constrains the amount of information that gets through the bottleneck, the reconstructions produced by JointVAE are somewhat worse than that of a regular VAE. In order to account for that effect, we also trained a second baseline model, which was regularized using weight-decay and achieved similar reconstruction quality as our disentangled model. All 3 trained models had the same architecture as was used by Dupont \cite{joint-vae}, outlined in Table \ref{tab:architecture}. \\
+\noindent As our disentangled model, we used JointVAE \cite{joint-vae}, an equivalent model to $\beta$-VAE, but with both continuous and discrete (or Concrete) latent variables, whose channel capacities were gradually increased during training. A regular VAE without any regularization was taken to be a baseline. However, as decreasing the capacity of the latent channels constrains the amount of information that gets through the bottleneck, the reconstructions produced by JointVAE are somewhat worse than that of a regular VAE. In order to account for that effect, we also trained a second baseline model, which was regularized using weight-decay and achieved similar reconstruction quality as our disentangled model. All 3 trained models had the same architecture as was used by Dupont \cite{joint-vae}, outlined in Table \ref{tab:architecture}. Since the MNIST dataset is grayscale, with most values near the boundaries (i.e. near 0 or 1), we modelled each dimension of the conditional distribution of the output as an independent Bernoulli random variable, as is common in literature \todo{cite!}. Accordingly, the outputs of the decoder were the expected values of the these random variables. \\
 
 \begin{center}
 \begin{tabular}{|l|l|}
@@ -491,7 +492,7 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent All models were trained with the Adam optimizer with a constant learning rate of $0.0001$ for $100,000$ randomly chosen batches from the training set with a mini-batch size of $64$. Following the guidelines of Maddison et. al. \cite{concrete} \footnote{They show that at temperatures lower than $(n-1)^{-1}$, where $n$ is the dimensionality of the Concrete variable, the probability simplex corresponding to the Concrete distribution is guaranteed not to have any modes in its interior. This gives us some confidence that our continuous relaxation is not too far from the corresponding discretized variable.}, the temperature parameter for the 10-way categorical Concrete distribution was taken to be $0.1$. For JointVAE, the initial latent capacities for both the continuous and discrete KL terms ($C_z$ and $C_c$ in in Equation \ref{eq:joint-vae}, respectively) were taken to be 0, which were linearly increased to $5$ over the whole training procedure. The capacity coefficient $\gamma$ for FactorVAE was taken to be $30$, which ensured that the KL was close to its target value at all times. The weight-decay coefficient for VAE with L2 regularization was chosen to be $0.5$. \\
 
-\noindent To generate adversarial examples for the preceding models, we used the latent-attack methodology of Kos et. al. \cite{kos-gen-adv}. In particular, the optimization problem in Equation \ref{eq:adv-gen} is solved with the Adam optimizer for $1000$ steps, with a learning rate of $0.001$ and a relative weighting coefficient $\lambda = 1$.
+\noindent To generate adversarial examples for the preceding models, we used the latent-attack methodology of Kos et. al. \cite{kos-gen-adv}. In particular, the optimization problem in Equation \ref{eq:adv-gen} is solved with the Adam optimizer for $1000$ steps, with a learning rate of $0.001$ and a relative weighting coefficient $\lambda = 1$. The inital starting point of the optimization procedure was constructed by adding zero-centered Gaussian noise with a standard deviation of $0.2$ to the source image.
 
 \begin{equation}
 \begin{aligned}
@@ -525,13 +526,21 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \bigskip
 
-\noindent The first metric, $AS_{\text{ignore-target}}$ measures the adversarial example's ability to reconstruct an image that depicts a digit that is different from that of the source image. Under this metric, an attack is successful even if the reconstructed digit has a different class than the source image \textit{and} the target image. \todo{More\dots} \\
+\noindent The first metric, $AS_{\text{ignore-target}}$, measures the adversarial example's ability to fool the VAE to reconstruct an image that depicts a digit that is different from that of the source image. Under this metric, an attack is successful even if the reconstructed digit has a different class than the source image \textit{and} the target image. Mathematically, for a single source-target pair, the metric is defined as follows:
+\begin{gather*}
+AS_{\text{ignore-target}} = 1 - \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{x}_s)],
+\end{gather*}
 
-\noindent The second metric, $AS_{\text{target}}$ \dots \todo{More\dots} \\
+\noindent where $\boldsymbol{x_*}$ is the adversarial example for the original source image $\boldsymbol{x}_s$, $f_\text{vae}(\boldsymbol{x})$ is the variational autoencoder outputting the natural parameters of the conditional distribution $p(\boldsymbol{x}|\boldsymbol{z})$ as the "reconstruction" of the input $\boldsymbol{x}$, $f_c(\cdot)$ is the digit classifier, $c(\boldsymbol{x})$ is the true class of $\boldsymbol{x}$, and $\mathbbm{1}(x, y)$ is an indicator function outputting $1$ is $x = y$ and $0$ otherwise. \\
 
-\noindent Suppose the MNIST test set is partitioned into 9 disjoint subsets, with  subset $S_j$ containing the images corresponding to class $j$, with $j = 0, 1, \dots, 9$. For each image $\boldsymbol{x}$ belonging to class $i$ in the MNIST test set, a random example $\boldsymbol{x}_j$ was drawn from each of the partitions $S_j$, $j \neq i$. The $9$ adversarial attacks were then carried out with $\boldsymbol{x}$ as source and $\boldsymbol{x}_j$ as targets. The generated adversarial examples were then fed into the MNIST classifier 
+\noindent The second metric, $AS_{\text{target}}$, considers an attack successful only if the digit present in the target image is reconstructed. Thus, $AS_{\text{target}} \leq AS_{\text{ignore-target}}$ for any pair of images. In symbolic notation, the metric can be written as follows:
+\begin{gather*}
+AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{x}_t)],
+\end{gather*}
 
-\noindent Following Kos et. al. \cite{kos-gen-adv}, two metrics were used to derive attack effectiveness 
+\noindent where $\boldsymbol{x}_t$ is the target image. \\
+
+\noindent To calculate the values of the metrics over the whole dataset, the following scheme was utilized. First, suppose the MNIST test set is partitioned into 9 disjoint subsets, with subset $S_j$ containing the images corresponding to class $j$, with $j = 0, 1, \dots, 9$. For an image $\boldsymbol{x}$ belonging to class $i$ in the MNIST test set, a random example $\boldsymbol{x}_j$ was drawn from each of the partitions $S_j$, $j \neq i$. The two success metrics were then measured by carrying out $9$ adversarial attacks with $\boldsymbol{x}$ as source and $\boldsymbol{x}_j$ as targets. The process was repeated for every image in the test set, and results averaged. To account for the imperfectness of the neural-network based classifier, we omitted source images whose reconstruction was misclassified from our analysis.
 
 \chapter{Results}
 
