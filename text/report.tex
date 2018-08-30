@@ -7,6 +7,7 @@
 \usepackage{color}
 \usepackage{bbm}
 \usepackage{amssymb,graphicx,color}
+\usepackage[nottoc]{tocbibind}
 \usepackage{subcaption}
 \usepackage{amsfonts}
 \usepackage{latexsym}
@@ -17,6 +18,10 @@
 \usepackage{xcolor}
 \usepackage{mathtools}
 \usepackage{float}
+\usepackage{rotating}
+
+\usepackage{hyperref}
+\urlstyle{same}
 
 \allowdisplaybreaks
 
@@ -56,13 +61,13 @@ $\Box$ \end{quotation}}
 
 \title{{ \includegraphics[scale=.5,natwidth=294,natheight=84]{ucl_logo}}\\
 {{\Huge Investigating the Robustness of Disentangled Variational Autoencoders to Adversarial Examples}}\\}
-\date{Submission date: 10.08.2018}
+\date{Submission date: 07.09.2018}
 \author{Sten Sootla\thanks{
 {\bf Disclaimer:}
 This report is submitted as part requirement for the MSc degree in Computational Statistics and Machine Learning at UCL. It is substantially the result of my own work except where explicitly indicated in the text. The report may be freely copied and distributed provided the source is explicitly acknowledged.}
 \\ \\
 Computational Statistics and Machine Learning\\ \\
-Supervised by Dr. Cristina Calnegru and Dr. John Shawe-Taylor
+Supervised by Dr. John Shawe-Taylor and Dr. Cristina Calnegru
 }
 
 
@@ -76,11 +81,7 @@ Summarise your report concisely.
 \tableofcontents
 \setcounter{page}{1}
 
-
 \chapter{Introduction}
-
-
-% 1. Adversarial examples
 
 \noindent In recent years, deep neural networks have shown impressive results in various supervised pattern recognition tasks, including image classification \cite{alexnet, resnet}, object detection \cite{rcnn}, and machine translation \cite{nmt}. Capitalizing on the resurgence of deep neural models in the supervised learning domain, unsupervised methods have also gone through a renaissance, as they have moved from modelling relatively simple datasets \cite{rbm, helmholtz} to being able to capture exceedingly complex real-world distributions \cite{began, musicvae}. One of the most prominent generative models behind these successes is the variational autoencoder (VAE) \cite{vae}, which merges conventional probabilistic methods with deep learning, using neural networks to parameterize both the generative and approximate posterior distributions in the the evidence lower bound. \\
 
@@ -88,13 +89,18 @@ Summarise your report concisely.
 
 \noindent First, the resulting decision boundaries of the trained networks are often non-interpretable and unintuitive. Indeed, one of the most well-known and intriguing failure modes of most machine learning algorithms is the existence of adversarial examples - datapoints that are perceptually very close to examples from the original training distribution, but which fool the model with high confidence \cite{intriguing-properties}. The fact that state-of-the-art deep learning models are subject to such adversarial perturbations challenges the narrative that they are unreasonably effective in generalizing outside the distribution they are trained on \cite{bengio-deep-architectures}. More practically, as the models under discussion are being pushed into production for use in semi-autonomous vehicles \cite{nvidia-self-driving-cars}, drones \cite{drones}, surveillance cameras \cite{surveillance-cameras} and malware detection pipelines \cite{malware}, the existence of adversarial examples poses a security threat with possible real-world consequences. \\
 
+
 \noindent Second, the internal representations learnt by deep neural networks are infamously complex and hard to analyse. Indeed, Szegedy et. al. \cite{intriguing-properties} have shown that directions along the coordinate axes are often no more semantically meaningful than other directions in the latent space. Similarly, Morcos et. al. \cite{importance-single-directions} discovered that even if there exist individual units that are interpretable, they are no more important to the task at hand than neurons that don't exhibit clear correlation with specific semantic concepts. In other words, the models learn representations where units are \textit{entangled} - each individual semnatically meaningful factor of variation in the input is explained by a combination of hidden units, as opposed to a single neuron. \\
 
 \noindent It has been argued \cite{bengio-representation} that such entangled representations are suboptimal for generalization, and incorporating inductive biases which would steer the representations towards \textit{disentanglement} would be beneficial. Indeed, it seems intuitively plausible that generalizing to novel configurations of concepts that were not encountered in the training distribution is easiest when relevant factors of variation in the input data are aligned with individual neurons in the latent space. Validating the intuition, such representations have recently shown promising results in zero-shot transfer learning \cite{darla}, semi-supervised learning \cite{dgpose}, and life-long learning \cite{vase}. \\
 
-\noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since one way to construct adversarial examples for encoder-decoder type models is to perturb the source image in such a way that its internal representation would be close to the representation of some target image, while simultaneously meddling with the pixels of the source image as little as possible \cite{kos-gen-adv, tabacof-gen-adv}. The success of this methodology implies that variational autoencoders do not preserve the locality of inputs in their latent space. It has been argued, however, that models whose internal representation is disentangled encode nearby points in pixel space to similar representations in latent space as well \cite{beta-vae}. If true, we would expect such models to be significantly more robust to adversarial examples of this type. \\
+\noindent This thesis investigates the possible relationship between the two intriguing properties of neural networks outlined above: the counter-intuitive decision boundaries, as manifested by adversarial examples, on one hand, and the apparent overly complex internal representations on the other. It is reasonable to assume the existence of such a connection, since one way to construct adversarial examples for encoder-decoder type models is to perturb the source image in such a way that its internal representation would be close to the representation of some target image, while simultaneously meddling with the pixels of the source image as little as possible \cite{kos-gen-adv, tabacof-gen-adv}. The success of this methodology implies that variational autoencoders do not preserve the locality of inputs in their latent space. It has been argued, however, that models whose internal representation is disentangled encode nearby points in pixel space to similar representations in latent space as well \cite{beta-vae}. If true, we would expect such models to be significantly more robust to adversarial inputs of this type. \\
 
-\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset \cite{mnist}. Surprisingly, it was found that disentangled generative models are actually \textit{less} robust to attacks on this dataset, contradicting our initial rationale. This stands in stark contrast to previous work by Alemi et. al. \cite{deep-variational-bottleneck}, which performed similar analysis for supervised models, but arrived at the opposite conclusion, highlighting a fundamental difference between generative and discriminative models when it comes to adversarial examples. \\
+\noindent To test the preceding hypothesis, we empirically evaluated the robustness of state-of-the-art disentanglement-inducing VAEs to adversarial examples \footnote{In the context of generative models, an adversarial example is a datapoint which is very similar to the original, untampered image, but whose reconstruction differs markedly from the original's. As an example, an adversarial image could look like a regular depiction of the digit two, but which is reconstructed as the digit four by the generative model.}, and compared the results to regular, entangled VAEs. The analyses were carried out for the MNIST handwritten images dataset \cite{mnist}. The code for reproducing the results can be accessed from the following repository: \url{https://github.com/sootlasten/adversarial-on-disentangled}. \\
+
+\noindent Contextually, this thesis can be viewed as a natural extension to the works of Kos et. al. \cite{kos-gen-adv} and Alemi et. al. \cite{deep-variational-bottleneck}. The former analysed the effectiveness of adversarial attacks to regular VAEs, but did not do so for their disentangled counterparts. The latter showed that by training a classifier with the same regularization principle that is usually used for VAEs to produce disentanglement, the model becomes more robust to adversarial inputs. However, as they operated in the context of image recognition, they were unable to evaluate whether the internal representation of their neural network was indeed factorized. \\
+
+\noindent Surprisingly, we found that disentangled generative models are actually \textit{less} robust to attacks on this dataset, contradicting our initial rationale. This stands in stark contrast to the work of Alemi et. al., who arrived at the opposite conclusion for models that were tasked with image classification, highlighting a fundamental difference between generative and discriminative models when it comes to adversarial examples. \\
 
 \noindent The thesis is organized as follows. In Chapter 2, a sufficiently in-depth overview of variational autoencoders, disentanglement, and adversarial examples is given. Chapter 3 outlines the experimental methodology, and provides exact details of the analyses done in this thesis for reproducibility. Chapter 4 gives the results of the experiments. 
 
@@ -464,17 +470,21 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 
 \noindent One of the most surprising properties of adversarial examples is their generality and transferability. Early work on the problem found that they generalize across different partitions of the same dataset \cite{intriguing-properties} and across models with different architectures \cite{explaining-and-harnessing}. More recently, Kurakin. et. al. \cite{kurakin16} discovered that they can also be extrapolated to the physical world, showing that models trained on the regular ImageNet \cite{imagenet} dataset are misclassifying adversarial examples even if they are printed on paper and viewed through a physical camera. Somewhat reassuringly, they have also been found to fool time-limited humans \cite{humans-adv}. While most research on adversarial examples has focussed on image classification, models trained to solve other kinds of machine learning tasks are subject to them as well, including ones specializing in speech-to-text \cite{audio-adv}, neural machine translation \cite{nmt-adv}, and deep reinforcement learning \cite{rl-adv}. \\
 
-\noindent Pertinent to this thesis is the work of Kos. et. al. \cite{kos-gen-adv}, who investigate adversarial examples in the context of generative models. They found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS for optimization, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}. \\
+\noindent Pertinent to this thesis is the work of Kos. et. al. \cite{kos-gen-adv}, who also investigate adversarial examples in the context of generative models. They found that VAEs and VAE-GANs \cite{vaegan}, a derivative of VAEs which enjoys better sample quality due to the fact that its reconstruction loss operates in the feature space of a GAN, are also suspect to them. To generate adversarial examples for such models, they took inspiration from Sabour et. al. \cite{sabour}, and perturbed the source image in such a way that its predicted posterior mean would be close to the posterior mean of some target image. Mathematically, this optimization problem is equivalent to the one in Equation \ref{eq:adv-class-opt}, with the classification loss replaced by the L2 norm measuring the discrepancy of the latent representations. They did, however, use Adam instead of L-BFGS for optimization, as advocated by Carlini \& Wagner \cite{carlini-wagner-16}. \\
 
 \noindent Another relevant work from our point of view is that of Alemi et. al. \cite{deep-variational-bottleneck}, in which they parameterize the information bottleneck in Equation \ref{eq:ib} using neural networks. By subsequently deriving a variational lower bound to this objective and making use of the reparatemerization trick, they end up with a model anologus to that of $\beta$-VAE, given that the output variable $Y$ in Equation \ref{eq:ib} is taken to be the reconstruction of the input. However, as their treatment is more broad, they are also able to generalize this approach to a classification setting, by taking $Y$ to be the class label. Intuitively, this amounts to swapping the decoder of $\beta$-VAE with an appropriate classifier. To demonstrate the usefulness of the bottleneck principle, they measured the robustness of the resulting classifier to adversarial examples on the MNIST and ImageNet datasets. They found that the model becomes progressively harder to fool as the capacity of the bottleneck is increased.
 
 \chapter{Methods}
 
+\section{Dataset}
+
 \noindent We used the MNIST handwritten digits dataset to measure the effect that a disentangled representation has on the ability to generate adversarial examples for VAEs. The dataset consists of $70,000$ images (partitioned into a train-eval-test split of $50,000$, $10,000$ and $10,000$ datapoints, respectively), each of which is assigned to a numeric class from 0 to 9. MNIST is one of the few datasets that have been extensively analysed both in the disentanglement, as well as in the adversarial example literature. It was the first dataset for which adversarial examples were constructed \cite{intriguing-properties}, and it has been shown that at least 3 factors of variation of handwritten digits can be disentangled on this dataset: class, angle, and thickness \cite{infogan, joint-vae}. Moreover, the two most closely related works to this thesis, that of Kos et. al. and Alemi et. al., concentrate on MNIST as well, making drawing comparisons easier. \\
 
 \noindent We also experimented with generating adversarial examples for other datasets, including dSprties and CelebA, a large-scale dataset of celebrety faces \cite{celeba}. Unfortunately, we found that dSprites is not sensitive to adversarial examples in the generative setting. This phenomenon is possibly due to the relatively simple visual appearance of the datapoints, resulting in 2 different inputs to have a relatively sparse set of common features that could be made use of while generating an adversarial input. Similarly, for CelebA, we were unable to construct adversarial examples with enough visual fidelity that would permit reasonable quantitative analysis to be carried out. \\
 
-\noindent As our disentangled model, we used JointVAE \cite{joint-vae}, an equivalent model to $\beta$-VAE, but with both continuous and discrete (or Concrete) latent variables, whose channel capacities were gradually increased during training. A regular VAE without any regularization was taken to be a baseline. However, as decreasing the capacity of the latent channels constrains the amount of information that gets through the bottleneck, the reconstructions produced by JointVAE are somewhat worse than that of a regular VAE. In order to account for that effect, we also trained a second baseline model, which was regularized using weight-decay and achieved similar reconstruction quality as our disentangled model. All 3 trained models had the same architecture as was used by Dupont \cite{joint-vae}, outlined in Table \ref{tab:architecture}. Since the MNIST dataset is grayscale, with most values near the boundaries (i.e. near 0 or 1), we modelled each dimension of the conditional distribution of the output as an independent Bernoulli random variable, as is common in literature \todo{cite!}. Accordingly, the outputs of the decoder were the expected values of the these random variables. \\
+\section{Model architecture and optimization}
+
+\noindent As our disentangled model, we used JointVAE \cite{joint-vae}, an equivalent model to $\beta$-VAE, but with both continuous and discrete (or Concrete) latent variables, whose channel capacities were gradually increased during training. A regular VAE without any regularization was taken to be a baseline. However, as decreasing the capacity of the latent channels constrains the amount of information that gets through the bottleneck, the reconstructions produced by JointVAE are somewhat worse than that of a regular VAE. In order to account for that effect, we also trained a second baseline model, which was regularized using weight-decay and achieved similar reconstruction quality as our disentangled model. All 3 trained models had the same architecture as was used by Dupont \cite{joint-vae}, outlined in Table \ref{tab:architecture}. Since the MNIST dataset is grayscale, with most values near the boundaries (i.e. near 0 or 1), we modelled each dimension of the conditional distribution of the output as an independent Bernoulli random variable, as is common in literature \cite{vae, beta-vae}. Accordingly, the outputs of the decoder were the expected values of these random variables. \\
 
 \begin{center}
 \begin{tabular}{|l|l|}
@@ -491,6 +501,8 @@ y_i = \frac{\text{exp}((\log \alpha_i + G_i) / \lambda)}{\sum_{j=1}^K \text{exp}
 \end{center}
 
 \noindent All models were trained with the Adam optimizer with a constant learning rate of $0.0001$ for $100,000$ randomly chosen batches from the training set with a mini-batch size of $64$. Following the guidelines of Maddison et. al. \cite{concrete} \footnote{They show that at temperatures lower than $(n-1)^{-1}$, where $n$ is the dimensionality of the Concrete variable, the probability simplex corresponding to the Concrete distribution is guaranteed not to have any modes in its interior. This gives us some confidence that our continuous relaxation is not too far from the corresponding discretized variable.}, the temperature parameter for the 10-way categorical Concrete distribution was taken to be $0.1$. For JointVAE, the initial latent capacities for both the continuous and discrete KL terms ($C_z$ and $C_c$ in in Equation \ref{eq:joint-vae}, respectively) were taken to be 0, which were linearly increased to $5$ over the whole training procedure. The capacity coefficient $\gamma$ for FactorVAE was taken to be $30$, which ensured that the KL was close to its target value at all times. The weight-decay coefficient for VAE with L2 regularization was chosen to be $0.5$. \\
+
+\section{Attack methodology}
 
 \noindent To generate adversarial examples for the preceding models, we used the latent-attack methodology of Kos et. al. \cite{kos-gen-adv}. In particular, the optimization problem in Equation \ref{eq:adv-gen} is solved with the Adam optimizer for $1000$ steps, with a learning rate of $0.001$ and a relative weighting coefficient $\lambda = 1$. The inital starting point of the optimization procedure was constructed by adding zero-centered Gaussian noise with a standard deviation of $0.2$ to the source image.
 
@@ -540,71 +552,54 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
 
 \noindent where $\boldsymbol{x}_t$ is the target image. \\
 
-\noindent To calculate the values of the metrics over the whole dataset, the following scheme was utilized. First, suppose the MNIST test set is partitioned into 9 disjoint subsets, with subset $S_j$ containing the images corresponding to class $j$, with $j = 0, 1, \dots, 9$. For an image $\boldsymbol{x}$ belonging to class $i$ in the MNIST test set, a random example $\boldsymbol{x}_j$ was drawn from each of the partitions $S_j$, $j \neq i$. The two success metrics were then measured by carrying out $9$ adversarial attacks with $\boldsymbol{x}$ as source and $\boldsymbol{x}_j$ as targets. The process was repeated for every image in the test set, and results averaged. To account for the imperfectness of the neural-network based classifier, we omitted source images whose reconstruction was misclassified from our analysis.
+\noindent To calculate the values of the metrics over the whole dataset, the following scheme was utilized. First, suppose the MNIST test set is partitioned into 9 disjoint subsets, with subset $S_j$ containing the images corresponding to class $j$, with $j = 0, 1, \dots, 9$. For an image $\boldsymbol{x}$ belonging to class $i$ in the MNIST test set, a random example $\boldsymbol{x}_j$ was drawn from each of the partitions $S_j$, $j \neq i$. The two success metrics were then measured by carrying out $9$ adversarial attacks with $\boldsymbol{x}$ as source and $\boldsymbol{x}_j$ as targets. The process was repeated for every image in the test set, and results averaged. To account for the imperfectness of the neural-network based classifier, we omitted source images whose reconstruction was misclassified from our analysis. When reconstructing the adversarial examples, no sampling was performed in the latent bottleneck layer. Rather, we used the predicted mean of the multivariate normal and the $\argmax$ over the predicted logits of the Concrete distribution as the latent vector that is propagated through the decoder.
 
 \chapter{Results}
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.5\textwidth,natwidth=342,natheight=342]{mnist_dis_trav}
-\end{center}
-\caption{mnist disentangled traversal}
-\end{figure}
+Figure \ref{fig:lat-trav} illustrates the reconstructions and latent traversals of the trained disentangled and regular variational autoencoders. The reconstructions in the second row are generated by feeding the corresponding original image in first row into the encoder, obtaining the mean of the Gaussian and the logits of the Concrete distribution. Next, a one-hot vector is constructed, in which the bit that is set is the one whose index is equal to the $\argmax$ over the logits. Next, the mean of the normal distribution and the one-hot vector are concatenated, and fed into the decoder. The traversal of the $i$-th continuous latent is generated by feeding the top-left image in each of the figures into the encoder, obtaining the mean and one-hot vector as before. However, now the $i$-th unit \footnote{Note that in this context, we consider the 10-dimensional one-hot vector as single unit.} of this vector is manually set to values linearly spaced in the range $[-3, 3]$ in the continuous case, or to integer from $0$ to $9$ in the discrete case. \\
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.5\textwidth,natwidth=342,natheight=342]{mnist_ent_trav}
-\end{center}
-\caption{MNIST entangled reconstruction}
-\end{figure}
+\noindent First, as expected, we see that the quality of reconstructions of the regular VAE is superior to that of the regularized VAEs. The reconstruction qualities of JointVAE and VAE with weight decay are roughly on the same level. Second, careful inspection of Figure \ref{fig:lat-trav-dis} reveals that JointVAE clearly disentangles 4 major factors of variation in MNIST digits: angle (3rd row), width (8th row), thickness (9th row), and digit class (last row). From Figures \ref{fig:lat-trav-ent} and \ref{fig:lat-trav-wdec} we see that VAEs whose latent bottleneck are largely unable to completely disentangle any factors of variation. Most notably, the last row for both of these models does not exhibit any variation, meaning that the categorical Concrete variable that encoded digit type in the JointVAE case is left unutilized. \\
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.5\textwidth,natwidth=342,natheight=342]{mnist_ent_wdec_trav}
-\end{center}
-\caption{MNIST entangled weight decay reconstruction}
-\end{figure}
-
-\begin{figure}
-\begin{subfigure}{.5\textwidth}
+\begin{figure}[H]
+\begin{subfigure}{.48\textwidth}
   \centering
-  \includegraphics[width=.9\linewidth]{mnist_dis_advs}
-  \caption{adv}
+  \includegraphics[width=.9\linewidth]{mnist_dis_trav}
+  \caption{JointVAE}
+  \label{fig:lat-trav-dis}
 \end{subfigure}%
-\begin{subfigure}{.5\textwidth}
+\begin{subfigure}{.48\textwidth}
   \centering
-  \includegraphics[width=.9\linewidth]{mnist_dis_adv_recons}
-  \caption{adv recon}
+  \includegraphics[width=.9\linewidth]{mnist_ent_trav}
+  \caption{VAE}
+  \label{fig:lat-trav-ent}
 \end{subfigure}
-\caption{MNIST disentangled adv and adv recon}
-\label{fig:mnist-dis-advs}
+\begin{subfigure}{.48\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{mnist_ent_wdec_trav}
+  \caption{VAE L2}
+  \label{fig:lat-trav-wdec}
+\end{subfigure}
+\caption{Reconstructions and latent traverals of various VAEs. The first row depicts 10 randomly sampled images from the MNIST test set, while the second row visualizes their reconstructions. The remaining 11 rows depict the latent traversals of each unit in the bottleneck layer, with each of the first 10 rows correspdonding to one of the dimensions of the multivariate normal distribution, and the last row corresponding to the categorical random variable.}
+\label{fig:lat-trav}
 \end{figure}
 
-\begin{figure}
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{mnist_ent_advs}
-  \caption{adv}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.9\linewidth]{mnist_ent_adv_recons}
-  \caption{adv recon}
-\end{subfigure}
-\caption{MNIST ent adv and adv recon}
-\label{fig:mnist-ent-advs}
-\end{figure}
+\noindent Table \ref{tab:mean-as} gives the results of adversarial attacks for the 3 models, averaged over the whole training set. First, we see that targeted attacks are much less successful than untargeted ones. This is expected, because some digit types, like 3, 8, and 9, are quite similar, resulting in phenomenon where the reconstruction of an adversarial example is not of the same type as the target, but still belongs to a visually closely related class of digits. For example, the adversarial image of $9$ in first column of row $3$ in Figure \ref{fig:mnist-dis-advs} had a target of $8$, but its reconstruction strongly resembles a $5$ or a $3$ instead. \\ 
+
+\noindent Second, and most importatly, the table reveals that the the disentangled variational autoencoder is significantly less robust to adversarial attacks than entangled models. This observation holds for both untargeted, as well as for target attacks, with JointVAE being roughly $24\%$ easier to fool for untargeted attacks, and $32\%$ for targeted, as compared to regular VAE. The effect can not be explained by the inferior reconstruction ability of JointVAE either, as VAE with weight decay, whose reconstructions are visually comparable to these of JointVAE, is even more robust to adversarial attacks than VAE. Indeed, the average success rate of untargeted attacks for the disentangled model is approximately $37\%$ higher than for the entangled model regularized with weight decay, with the number increasing to $59.7\%$ for targeted attacks. \\
 
 \begin{center}
   \begin{tabular}{|c|c|c|}
   \hline
    & \textbf{AS ignore-target} & \textbf{AS target} \\ \hline
-  \textbf{Disentangled} & 36.86\% & 12.54\% \\ \hline
-  \textbf{Entangled} & 29.83\% & 9.49\% \\ \hline
-  \textbf{Entangled wdec} & 26.88\% & 7.85\% \\ \hline
+  \textbf{JointVAE} & 36.86\% & 12.54\% \\ \hline
+  \textbf{VAE} & 29.83\% & 9.49\% \\ \hline
+  \textbf{VAE L2} & 26.88\% & 7.85\% \\ \hline
   \end{tabular}
-\captionof{table}{Means}
+\label{tab:mean-as}
+\captionof{table}{The results of adversarial attacks for JointVAE, regular VAE, and VAE regularized with an L2 norm (i.e. weight decay), averaged over the entire MNIST test set.}
 \end{center}
+
+\noindent Tables \ref{tab:adv-atck-source-marg} and \ref{tab:adv-atck-target-marg} show the average marginals of the full attack matrices, while the complete matrices themselves, which outline the effectiveness of the attacks for every source-target pair, are given in the Appendix. In both tables, for each digit, the cell highligted in gray corresponds to the model which was easiest to fool, as measured by the untargeted attack success metric $AS_\text{ignore-target}$. We see that for the vast majority of digit classes, the disentangled models are most prone to be fooled by adversarial examples. A notable exception is the case when the source image depicting a $4$ is perturbed to any other class, in which case JointVAE substantially outperforms (as in, is harder to fool) the other models in terms of the $AS_{\text{ignore-target}}$ metric. \\
 
 \begin{center}
 {\tiny
@@ -620,8 +615,11 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
   & \makecell{34.74\% \\ (8.65\%)} & \makecell{24.94\% \\ (6.10\%)} & \makecell{18.45\% \\ (4.26\%)} & \cellcolor{light-gray} \makecell{23.46\% \\ (7.61\%)} & \makecell{32.28\% \\ (12.09\%)} \\ \cline{2-6}
   \end{tabular}
 }
-\captionof{table}{Source marginals}
+\captionof{table}{Average source marginals of the full attack success matrices. In each cell, $AS_\text{ignore-target}$ is written above, while $AS_{target}$ is indicated below in brackets.}
+\label{tab:adv-atck-source-marg}
 \end{center}
+
+\medskip
 
 \begin{center}
 {\tiny
@@ -637,16 +635,75 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
   & \makecell{27.39\% \\ (4.44\%)} & \makecell{20.63\% \\ (3.89\%)} & \makecell{29.92\% \\ (12.57\%)} & \makecell{33.21\% \\ (12.55\%)} & \makecell{23.67\% \\ (8.72\%)} \\ \cline{2-6}
   \end{tabular}
 }
-\captionof{table}{Target marginals}
+\captionof{table}{Average target marginals of the full attack success matrices. In each cell, $AS_\text{ignore-target}$ is written above, while $AS_{target}$ is indicated below in brackets.}
+\label{tab:adv-atck-target-marg}
 \end{center}
+
+\noindent Figures \ref{fig:mnist-dis-advs} nad \ref{fig:mnist-ent-advs} illustrates the adversarial examples for JointVAE and VAE, respectively. The adversarial inputs are generated with the first $100$ images of the MNIST test set taken as sources, and the top-left image of the digit $8$ in Figure \ref{fig:lat-trav-dis} considerd as target. Although not explicitly shown here, we validated that the adversarial examples shown in Figures \ref{fig:mnist-dis-advs-a} and \ref{fig:mnist-ent-advs-a} are visually almost indistinguishable from the corresponding original images from which the adversarial input is derived. \\
+
+\noindent For both models, we can observe a variety of successful attacks, in the sense that the reconstructed adversarial input is of different class than the source image. Interestingly, it can be observed that in some cases, even though the digit class changes shape, other factors of variation stay more similar to the source image than to that of the target. For example, consider the adversarial images in the 9-th column, in rows 4 and 5. For both models, we see that the relatively slim 2 is reconstructed as an $8$ that falls to the slimmer side as well, while the reconstruction of the thicker $4$ is reconstructed as a thick $8$. This qualitative observations could indicate that the target's digit class might be an easier factor of variation to capture for the adversarial example than some other, continuous properties of digits. \\
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{mnist_dis_advs}
+  \caption{Adversarial examples}
+  \label{fig:mnist-dis-advs-a}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{mnist_dis_adv_recons}
+  \caption{Reconstructions of the adversarial examples}
+  \label{fig:mnist-dis-advs-b}
+\end{subfigure}
+\caption{Adversarial examples for JointVAE.}
+\label{fig:mnist-dis-advs}
+\end{figure}
+
+\begin{figure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{mnist_ent_advs}
+  \caption{Adversarial examples}
+  \label{fig:mnist-ent-advs-a}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{mnist_ent_adv_recons}
+  \caption{Reconstructions of the adversarial examples}
+  \label{fig:mnist-ent-advs-b}
+\end{subfigure}
+\caption{Adversarial examples for VAE.}
+\label{fig:mnist-ent-advs}
+\end{figure}
+
+\noindent Another noteworthy observation worth highlighting is that while JointVAE's reconstructions of the adversarial examples are more blurry, the majority of them look much more natural and smooth, as compared to the reconstructions of regular VAE. As an example, compare the images in the first column of row $6$ in Figures \ref{fig:mnist-dis-advs-b} and \ref{fig:mnist-ent-advs-b}. This could be attributed to the fact that constraining the latent bottleneck gives rise to enhanced generalizability, which manifests when one reconstructs latent vectors sampled from esoteric regions in the latent space. \\
+
+\noindent From Figure \ref{fig:lat-trav-ent}, we see that regular VAE is prone to produce uninterpretable reconstructions at extreme values of latent units that were likely not seen during training (corresponding to images near the left and right side of the figure), regular VAE is prone to produce uninterpretable reconstructions. This is most clearly illustrated by the $4$-th row of said figure, where a clear reconstruction is achieved only by a small set of values near the mean of the distribution. On the other hand, a disentangled model generalized gracefully even to out-of-sample latent values, as can be observed from Figure \ref{fig:lat-trav-dis}. Connecting this effect back to the context of adversarial examples, the fact that some of the reconstructions of adversarial inputs by VAE look unnatural indicates that while optimizing Equation \ref{eq:adv-gen}, one occasionally arrives at a solution whose encoded representation is far from what is usually seen in the training set. 
 
 \chapter{Conclusion}
 
-\chapter{Appendix}
+\section{Summary}
 
-\begin{table}
-\noindent\makebox[\textwidth]{
-{\tiny
+The thesis compared the effect of adversarial attacks to disentangled and entangled variational autoencoders on the MNIST handwritten images dataset. It was found that models which are more strongly regularized to have a factorial internal representation are less robust to adversarial perturbations than their entangled counterparts. However, the reconstructions of the adversarial examples for disentangled VAEs were qualitatively more natural-looking than these of regular VAE. \\
+
+\noindent The author of this thesis was responsible for proposing the research direction, implementing the models in code, carrying out the subsequent analysis, and interpreting the results.
+
+\section{Future work and discussion}
+
+\noindent One drawback of the quantitative evaluation approach taken in this thesis is that our metric of attack success depended only on one of the factors of variation in the dataset, the digit class. This restriction was mainly due to our choice of dataset, as the type of digit is the only factor of variation labelled in MNIST. Future work should extend our analysis to more diverse datasets with more labelled attributes, like CelebA. This, however, is complicated by the fact that vanilla VAE architectures produce results of poor quality on such rich datasets. Thus, it might be necessary to employ structural modifications to the original model that was described in Section 2.3. For example, one might use VAE-GAN \cite{vaegan} or DFC-VAE \cite{dfc-vae} to achieve better reconstructions. \\
+
+\noindent An additional avenue worth investigating is the use of more recently proposed VAE-based regularization schemes in the disentanglement literature. For example, Qi et. al. \cite{tc-vae} identify that the KL-divergence in the latent bottleneck decomposes into 3 terms. They found that putting more weight onto only one of the terms, the total correlation between the latents, yields state-of-the art results for disentanglement. It is interesting to examine which of the identified terms are most responsible for the observed decrease in robustness to adversarial attacks. Relatedly, we did carry out some preliminary experiments with FactorVAE \cite{factor-vae}, which is a model that also minimizes the same total correlation term. However, we found it not to be able to encode digit type into the Concrete latent on the MNIST dataset. \\ 
+
+\noindent Finally, a more thorough understanding of deep probabilistic latent variable models would help shed light to some of the conundrums stemming from our results. First, the question as to why constraining the latent bottleneck in a classification setting diminishes the effectiveness of adversarial inputs, but increases it in a generative setting is left open. Second, the intuiton laid out by Burgess et. al. \cite{beta-vae}, positing that $\beta$-VAE encodes nearby points in pixel space close together in latent space, is not supported by our observations.
+
+\chapter*{Appendix}
+\addcontentsline{toc}{chapter}{Appendix}
+
+Tables \ref{tab:dis-full-atck}, \ref{tab:ent-full-atck} and \ref{tab:wdec-full-atck} give the attack success rates for all possible pairs of MNIST digits, for JointVAE, VAE, and VAE with weight decay, respectively. For all tables, In each cell, $AS_\text{ignore-target}$ is written above, while $AS_{target}$ is indicated below in brackets.
+
+\begin{sidewaystable}
+\caption{Adversarial attack successes for JointVAE.}\label{tab:dis-full-atck}
   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
   \cline{1-11}
   \multirow{2}{*}{\textbf{Source}}
@@ -663,15 +720,11 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
 \textbf{8} & \makecell{25.11\% \\ (0.79\%)} & \makecell{13.13\% \\ (1.71\%)} & \makecell{30.48\% \\ (24.20\%)} & \makecell{24.06\% \\ (14.71\%)} & \makecell{11.16\% \\ (5.69\%)} & \makecell{18.67\% \\ (12.36\%)} & \makecell{22.80\% \\ (6.02\%)} & \makecell{10.87\% \\ (5.03\%)} & - & \makecell{7.79\% \\ (5.73\%)} \\ \hline
 \textbf{9} & \makecell{80.48\% \\ (0.80\%)} & \makecell{39.78\% \\ (1.01\%)} & \makecell{77.94\% \\ (5.65\%)} & \makecell{80.51\% \\ (20.82\%)} & \makecell{36.64\% \\ (34.79\%)} & \makecell{77.28\% \\ (22.97\%)} & \makecell{75.44\% \\ (4.60\%)} & \makecell{29.54\% \\ (22.74\%)} & \makecell{80.48\% \\ (57.39\%)} & - \\ \hline
 \end{tabular}
-}
-}
-\captionof{table}{Disentangled}
-\end{table}
+\end{sidewaystable}
 
 
-\begin{table}
-\noindent\makebox[\textwidth]{
-{\tiny
+\begin{sidewaystable}
+\caption{Adversarial attack successes for VAE.}\label{tab:ent-full-atck}
   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
   \cline{1-11}
   \multirow{2}{*}{\textbf{Source}}
@@ -688,14 +741,12 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
 \textbf{8} & \makecell{12.83\% \\ (1.03\%)} & \makecell{7.80\% \\ (0.00\%)} & \makecell{21.08\% \\ (9.91\%)} & \makecell{36.89\% \\ (30.99\%)} & \makecell{8.67\% \\ (0.57\%)} & \makecell{21.05\% \\ (6.97\%)} & \makecell{10.69\% \\ (2.21\%)} & \makecell{16.72\% \\ (0.80\%)} & - & \makecell{10.72\% \\ (5.36\%)} \\ \hline
 \textbf{9} & \makecell{9.74\% \\ (1.79\%)} & \makecell{6.89\% \\ (0.54\%)} & \makecell{29.15\% \\ (1.82\%)} & \makecell{36.42\% \\ (21.34\%)} & \makecell{13.30\% \\ (10.64\%)} & \makecell{24.85\% \\ (8.65\%)} & \makecell{8.11\% \\ (0.11\%)} & \makecell{11.96\% \\ (5.60\%)} & \makecell{32.30\% \\ (27.78\%)} & - \\ \hline
   \end{tabular}
-}
-}
-\captionof{table}{Entangled}
-\end{table}
+\end{sidewaystable}
 
-\begin{table}
-\noindent\makebox[\textwidth]{
-{\tiny
+
+\begin{sidewaystable}
+\centering
+\caption{Adversarial attack successes for VAE with weight decay.}\label{tab:wdec-full-atck}
   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
   \cline{1-11}
   \multirow{2}{*}{\textbf{Source}}
@@ -712,10 +763,7 @@ AS_{target} = \mathbbm{1} [f_c(f_\text{vae}(\boldsymbol{x}_{*})), c(\boldsymbol{
 \textbf{8} & \makecell{19.32\% \\ (3.26\%)} & \makecell{16.40\% \\ (1.59\%)} & \makecell{37.96\% \\ (26.31\%)} & \makecell{34.68\% \\ (20.08\%)} & \makecell{19.24\% \\ (0.38\%)} & \makecell{16.34\% \\ (4.40\%)} & \makecell{21.80\% \\ (2.42\%)} & \makecell{29.87\% \\ (6.03\%)} & - & \makecell{15.54\% \\ (4.05\%)} \\ \hline
 \textbf{9} & \makecell{22.89\% \\ (2.49\%)} & \makecell{14.12\% \\ (0.92\%)} & \makecell{48.74\% \\ (11.30\%)} & \makecell{54.99\% \\ (23.67\%)} & \makecell{13.57\% \\ (5.88\%)} & \makecell{38.27\% \\ (6.44\%)} & \makecell{19.83\% \\ (0.61\%)} & \makecell{40.14\% \\ (36.64\%)} & \makecell{37.96\% \\ (20.88\%)} & - \\ \hline
   \end{tabular}
-}
-}
-\captionof{table}{Entangled with weight decay}
-\end{table}
+\end{sidewaystable}
 
 \newpage
 \bibliographystyle{plain}
